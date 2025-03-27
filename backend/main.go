@@ -2,7 +2,8 @@ package main
 
 import (
 	"github.com/AkifSahn/pollution-tracker/config"
-	"github.com/AkifSahn/pollution-tracker/routes"
+	"github.com/AkifSahn/pollution-tracker/internal/database"
+	"github.com/AkifSahn/pollution-tracker/internal/pollution"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -13,9 +14,8 @@ func main() {
 	})
 
 	cfg := config.LoadConfig()
-	// database.InitDB(cfg)
-
-	routes.SetupRoutes(app)
+	database.InitDB(cfg)
+	pollution.SetupRoutes(app)
 
 	err := app.Listen(":" + cfg.ServerPort)
 	if err != nil {

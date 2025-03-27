@@ -1,4 +1,4 @@
-package models
+package pollution
 
 import "time"
 
@@ -8,3 +8,4 @@ type Pollution struct {
 	Longitude float64   `json:"longitude"`
 	Pollution float64   `json:"pollution"`
 }
+

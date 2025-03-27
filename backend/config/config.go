@@ -8,13 +8,17 @@ import (
 )
 
 type Config struct {
-	DBUser     string
-	DBPassword string
-	DBName     string
-	DBHost     string
-	DBPort     string
-	ServerHost string
-	ServerPort string
+	DBUser       string
+	DBPassword   string
+	DBName       string
+	DBHost       string
+	DBPort       string
+	ServerHost   string
+	ServerPort   string
+	AmqpUser     string
+	AmqpPassword string
+	AmqpHost     string
+	AmqpPort     string
 }
 
 var cfg *Config
@@ -30,13 +34,17 @@ func LoadConfig() *Config {
 	}
 
 	cfg = &Config{
-		DBUser:     getEnv("DB_USER", "timescale"),
-		DBPassword: getEnv("DB_PASSWORD", ""),
-		DBName:     getEnv("DB_NAME", "pollution"),
-		DBHost:     getEnv("DB_HOST", "127.0.0.1"),
-		DBPort:     getEnv("DB_PORT", "5432"),
-		ServerHost: getEnv("SERVER_HOST", "127.0.0.1"),
-		ServerPort: getEnv("SERVER_PORT", "3000"),
+		DBUser:       getEnv("DB_USER", "timescale"),
+		DBPassword:   getEnv("DB_PASSWORD", ""),
+		DBName:       getEnv("DB_NAME", "pollution"),
+		DBHost:       getEnv("DB_HOST", "127.0.0.1"),
+		DBPort:       getEnv("DB_PORT", "5432"),
+		ServerHost:   getEnv("SERVER_HOST", "127.0.0.1"),
+		ServerPort:   getEnv("SERVER_PORT", "3000"),
+		AmqpUser:     getEnv("AMQP_USER", "guest"),
+		AmqpPassword: getEnv("AMQP_PASSWORD", "guest"),
+		AmqpHost:     getEnv("AMQP_HOST", "localhost"),
+		AmqpPort:     getEnv("AMQP_PORT", "5672"),
 	}
 
 	return cfg

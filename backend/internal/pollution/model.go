@@ -6,6 +6,7 @@ type Pollution struct {
 	Time      time.Time `json:"time"`
 	Latitude  float64   `json:"latitude"`
 	Longitude float64   `json:"longitude"`
-	Pollution float64   `json:"pollution"`
+	Region    string    `json:"region"`
+	Value     float64   `json:"value"`
+	IsAnomaly bool      `json:"is_anomaly"`
 }
-

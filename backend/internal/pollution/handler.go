@@ -1,8 +1,12 @@
 package pollution
 
 import (
+	"context"
 	"encoding/json"
+	"strconv"
+	"time"
 
+	"github.com/AkifSahn/pollution-tracker/internal/database"
 	"github.com/AkifSahn/pollution-tracker/internal/rabbitmq"
 	"github.com/gofiber/fiber/v2"
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -13,7 +17,7 @@ func SetupRoutes(app *fiber.App) {
 	api := app.Group("/api")
 
 	// // Endpoints for auth handlers
-	api.Get("air-quality/:location", GetAirQualityLocation)
+	api.Get("air-quality/:latitude/:longitude", GetAirQualityLocation)
 	api.Get("anomalies", GetAnomaliesOfRange)
 	api.Get("regions-density/:region", GetPollutionDensityRegion)
 
@@ -21,20 +25,113 @@ func SetupRoutes(app *fiber.App) {
 }
 
 func GetAirQualityLocation(c *fiber.Ctx) error {
-	return c.JSON(fiber.Map{
-		"message": "GetAirQualityLocation",
+
+	latStr := c.Params("latitude")
+	longStr := c.Params("longitude")
+
+	latitude, err := strconv.ParseFloat(latStr, 64)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Cannot parse the given latitude value!",
+		})
+	}
+
+	longitude, err := strconv.ParseFloat(longStr, 64)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Cannot parse the given longitude value!",
+		})
+	}
+
+	repo := NewPollutionRepo(database.DB)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	val, err := repo.GetPollutionValueByPosition(ctx, latitude, longitude)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to fetch data from database! " + err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"value": val,
 	})
 }
 
 func GetAnomaliesOfRange(c *fiber.Ctx) error {
+	fromStr := c.Query("from")
+	toStr := c.Query("to")
+
+	// Parse the string times into time.Time
+	format := "2006-01-02 15:04:05"
+	from, err := time.Parse(format, fromStr)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Failed to parse given time value(from)!",
+		})
+	}
+
+	to, err := time.Parse(format, toStr)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Failed to parse given time value(to)!",
+		})
+	}
+
+	repo := NewPollutionRepo(database.DB)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// Get anomalies from database
+	pollutions, err := repo.GetAnomaliesWithinTimeRange(ctx, from, to)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to fetch pollution entries from database " + err.Error(),
+		})
+	}
+
 	return c.JSON(fiber.Map{
-		"message": "GetAnomaliesOfRange",
+		"pollutions": pollutions,
 	})
 }
 
 func GetPollutionDensityRegion(c *fiber.Ctx) error {
-	return c.JSON(fiber.Map{
-		"message": "GetPollutionDensityRegion",
+	region := c.Params("region")
+	fromStr := c.Query("from")
+	toStr := c.Query("to")
+
+	// Parse the string times into time.Time
+	format := "2006-01-02 15:04:05"
+	from, err := time.Parse(format, fromStr)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Failed to parse given time value(from)!",
+		})
+	}
+
+	to, err := time.Parse(format, toStr)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Failed to parse given time value(to)!",
+		})
+	}
+	// --------
+
+	repo := NewPollutionRepo(database.DB)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	density, err := repo.GetPollutionDensityByRegion(ctx, region, from, to)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to fetch region density from database",
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"region":  region,
+		"density": density,
 	})
 }
 

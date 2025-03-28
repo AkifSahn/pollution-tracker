@@ -9,4 +9,5 @@ type Pollution struct {
 	Region    string    `json:"region"`
 	Value     float64   `json:"value"`
 	IsAnomaly bool      `json:"is_anomaly"`
+	Pollutant string    `json:"pollutant"`
 }

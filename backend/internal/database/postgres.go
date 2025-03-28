@@ -21,7 +21,6 @@ func connectDB(cfg *config.Config) *pgx.Conn {
 	if err != nil {
 		log.Fatal("Unable to connect to database", err)
 	}
-	defer conn.Close(ctx)
 
 	//run a simple query to check our connection
 	var greeting string

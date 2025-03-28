@@ -5,6 +5,7 @@ import (
 
 	"github.com/AkifSahn/pollution-tracker/config"
 	"github.com/AkifSahn/pollution-tracker/internal/database"
+	"github.com/AkifSahn/pollution-tracker/internal/ingest"
 	"github.com/AkifSahn/pollution-tracker/internal/pollution"
 	"github.com/AkifSahn/pollution-tracker/internal/rabbitmq"
 	"github.com/gofiber/fiber/v2"
@@ -29,29 +30,12 @@ func main() {
 	defer rabbitmq.AmqpConn.Close()
 	defer rabbitmq.AmqpCh.Close()
 
-	msgs, err := rabbitmq.AmqpCh.Consume(
-		"ingest_queue", // queue
-		"",             // consumer
-		true,           // auto-ack
-		false,          // exclusive
-		false,          // no-local
-		false,          // no-wait
-		nil,            // args
-	)
-	if err != nil {
-		log.Fatalf("Failed to register a consumer: %s", err.Error())
-	}
-
-	go func() {
-		for d := range msgs {
-			log.Printf("Received a message: %s", d.Body)
-		}
-	}()
+	go ingest.ListenIngestion()
 
 	app.Use(logger.New())
 	pollution.SetupRoutes(app)
 
-	err = app.Listen(":" + cfg.ServerPort)
+	err := app.Listen(":" + cfg.ServerPort)
 	if err != nil {
 		panic(err)
 	}

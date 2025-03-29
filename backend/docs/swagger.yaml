@@ -1,0 +1,152 @@
+definitions:
+  pollution.Pollution:
+    properties:
+      is_anomaly:
+        type: boolean
+      latitude:
+        type: number
+      longitude:
+        type: number
+      pollutant:
+        type: string
+      region:
+        type: string
+      time:
+        type: string
+      value:
+        type: number
+    type: object
+info:
+  contact: {}
+  description: API documentation for pollution-tracker app
+  title: pollution-tracker API
+paths:
+  /api/air-quality/{latitude}/{longitude}:
+    get:
+      description: Gets air quality value for given location
+      parameters:
+      - description: latitude
+        in: path
+        name: latitude
+        required: true
+        type: string
+      - description: longitude
+        in: path
+        name: longitude
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: val
+          schema:
+            type: string
+        "400":
+          description: Cannot parse the given latitude/longitude value!
+          schema:
+            type: string
+        "500":
+          description: Failed to fetch data from database!
+          schema:
+            type: string
+      summary: Gets air quality value
+      tags:
+      - pollution
+  /api/anomalies:
+    get:
+      description: Gets anomalies for a given time frange
+      parameters:
+      - description: from
+        in: query
+        name: from
+        required: true
+        type: string
+      - description: to
+        in: query
+        name: to
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: pollution
+          schema:
+            items:
+              $ref: '#/definitions/pollution.Pollution'
+            type: array
+        "400":
+          description: Failed to parse given time value(from)!
+          schema:
+            type: string
+        "500":
+          description: Failed to fetch pollution entries from database
+          schema:
+            type: string
+      summary: Gets anomalies for range
+      tags:
+      - pollution
+  /api/ingest/manual:
+    post:
+      consumes:
+      - application/json
+      description: Posts a new pollution entry
+      parameters:
+      - description: Request of adding a new pollution entry
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/pollution.Pollution'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully received the pollution entry
+          schema:
+            type: string
+        "400":
+          description: Failed to marshal request body
+          schema:
+            type: string
+        "500":
+          description: Failed to publish pollution entry to RabbitMQ queue
+          schema:
+            type: string
+      summary: Posts pollution entry
+      tags:
+      - pollution
+  /api/regions-density/{region}:
+    get:
+      description: Gets pollution density for a given region
+      parameters:
+      - description: from
+        in: query
+        name: from
+        required: true
+        type: string
+      - description: to
+        in: query
+        name: to
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: density
+          schema:
+            type: string
+        "400":
+          description: Failed to parse given time value(from)!
+          schema:
+            type: string
+        "500":
+          description: Failed to fetch region density from database
+          schema:
+            type: string
+      summary: Gets pollution density
+      tags:
+      - pollution
+swagger: "2.0"

@@ -24,6 +24,18 @@ func SetupRoutes(app *fiber.App) {
 	api.Post("ingest/manual", PostPollutionEntry)
 }
 
+// GetAirQualityLocation
+//
+//	@Summary		Gets air quality value
+//	@Description	Gets air quality value for given location
+//	@Tags			pollution
+//	@Produce		json
+//	@Param			latitude	path		string	true	"latitude"
+//	@Param			longitude	path		string	true	"longitude"
+//	@Success		400			{string}	string	"Cannot parse the given latitude/longitude value!"
+//	@Success		500			{string}	string	"Failed to fetch data from database!"
+//	@Success		200			{string}	string	"val"
+//	@Router			/api/air-quality/{latitude}/{longitude} [get]
 func GetAirQualityLocation(c *fiber.Ctx) error {
 
 	latStr := c.Params("latitude")
@@ -59,6 +71,19 @@ func GetAirQualityLocation(c *fiber.Ctx) error {
 	})
 }
 
+// GetAnomaliesOfRange
+//
+//	@Summary		Gets anomalies for range
+//	@Description	Gets anomalies for a given time frange
+//	@Tags			pollution
+//	@Produce		json
+//	@Param			from	query		string		true	"from"
+//	@Param			to		query		string		true	"to"
+//	@Success		400		{string}	string		"Failed to parse given time value(from)!"
+//	@Success		400		{string}	string		"Failed to parse given time value(from)!"
+//	@Success		500		{string}	string		"Failed to fetch pollution entries from database"
+//	@Success		200		{object}	[]Pollution	"pollution"
+//	@Router			/api/anomalies [get]
 func GetAnomaliesOfRange(c *fiber.Ctx) error {
 	fromStr := c.Query("from")
 	toStr := c.Query("to")
@@ -96,6 +121,19 @@ func GetAnomaliesOfRange(c *fiber.Ctx) error {
 	})
 }
 
+// GetPollutionDensityRegion
+//
+//	@Summary		Gets pollution density
+//	@Description	Gets pollution density for a given region
+//	@Tags			pollution
+//	@Produce		json
+//	@Param			from	query		string	true	"from"
+//	@Param			to		query		string	true	"to"
+//	@Success		400		{string}	string	"Failed to parse given time value(from)!"
+//	@Success		400		{string}	string	"Failed to parse given time value(from)!"
+//	@Success		500		{string}	string	"Failed to fetch region density from database"
+//	@Success		200		{string}	string	"density"
+//	@Router			/api/regions-density/{region} [get]
 func GetPollutionDensityRegion(c *fiber.Ctx) error {
 	region := c.Params("region")
 	fromStr := c.Query("from")
@@ -135,6 +173,19 @@ func GetPollutionDensityRegion(c *fiber.Ctx) error {
 	})
 }
 
+// PostPollutionEntry
+//
+//	@Summary		Posts pollution entry
+//	@Description	Posts a new pollution entry
+//	@Tags			pollution
+//	@Accept			json
+//	@Produce		json
+//	@Param			request	body		Pollution	true	"Request of adding a new pollution entry"
+//	@Success		400		{string}	string		"Failed to parse request body"
+//	@Success		400		{string}	string		"Failed to marshal request body"
+//	@Success		500		{string}	string		"Failed to publish pollution entry to RabbitMQ queue"
+//	@Success		200		{string}	string		"Successfully received the pollution entry"
+//	@Router			/api/ingest/manual [post]
 func PostPollutionEntry(c *fiber.Ctx) error {
 	var body Pollution
 

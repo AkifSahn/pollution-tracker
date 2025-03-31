@@ -1,0 +1,276 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "API documentation for pollution-tracker app",
+        "title": "pollution-tracker API",
+        "contact": {}
+    },
+    "paths": {
+        "/api/air-quality/{latitude}/{longitude}": {
+            "get": {
+                "description": "Gets air quality value for given location. Optional time range can be given",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "pollution"
+                ],
+                "summary": "Gets air quality value",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "latitude",
+                        "name": "latitude",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "longitude",
+                        "name": "longitude",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Starting time",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "End time",
+                        "name": "to",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "values: []PollutionValueResponse",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/pollution.PollutionValueResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Cannot parse the given latitude/longitude value!",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to fetch data from database!",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/anomalies": {
+            "get": {
+                "description": "Gets anomalies for a given time frange",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "pollution"
+                ],
+                "summary": "Gets anomalies for range",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "from",
+                        "name": "from",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "to",
+                        "name": "to",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "pollution",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/pollution.Pollution"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Failed to parse given time value(from)!",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to fetch pollution entries from database",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/ingest/manual": {
+            "post": {
+                "description": "Posts a new pollution entry",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "pollution"
+                ],
+                "summary": "Posts pollution entry",
+                "parameters": [
+                    {
+                        "description": "Request of adding a new pollution entry",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/pollution.Pollution"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully received the pollution entry",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Failed to marshal request body",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to publish pollution entry to RabbitMQ queue",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/region-density/{latitude}/{longitude}/{radius}": {
+            "get": {
+                "description": "Gets pollution density for a given radius",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "pollution"
+                ],
+                "summary": "Gets pollution density",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "latitude",
+                        "name": "latitude",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "longitude",
+                        "name": "longitude",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "radius",
+                        "name": "radius",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "from",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "to",
+                        "name": "to",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "density",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Failed to parse given radius value!",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to fetch region density from database",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "pollution.Pollution": {
+            "type": "object",
+            "properties": {
+                "is_anomaly": {
+                    "type": "boolean"
+                },
+                "latitude": {
+                    "type": "number"
+                },
+                "longitude": {
+                    "type": "number"
+                },
+                "pollutant": {
+                    "type": "string"
+                },
+                "time": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "number"
+                }
+            }
+        },
+        "pollution.PollutionValueResponse": {
+            "type": "object",
+            "properties": {
+                "pollutant": {
+                    "type": "string"
+                },
+                "time": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "number"
+                }
+            }
+        }
+    }
+}

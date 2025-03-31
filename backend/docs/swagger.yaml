@@ -23,7 +23,8 @@ info:
 paths:
   /api/air-quality/{latitude}/{longitude}:
     get:
-      description: Gets air quality value for given location
+      description: Gets air quality value for given location. Optional time range
+        can be given
       parameters:
       - description: latitude
         in: path
@@ -34,6 +35,14 @@ paths:
         in: path
         name: longitude
         required: true
+        type: string
+      - description: Starting time
+        in: query
+        name: from
+        type: string
+      - description: End time
+        in: query
+        name: to
         type: string
       produces:
       - application/json

@@ -26,12 +26,13 @@ func NewPollutionRepo(db *pgx.Conn) *PollutionRepoImpl {
 	}
 }
 
-func (repo *PollutionRepoImpl) GetPollutionValueByPosition(ctx context.Context, latitude, longitude float64) (float64, error) {
+func (repo *PollutionRepoImpl) GetPollutionValueByPosition(ctx context.Context, latitude, longitude float64, from, to time.Time) (float64, error) {
 	query := `
     SELECT value FROM air_pollution 
     WHERE latitude=$1 AND longitude=$2 
+    AND time BETWEEN $3 AND $4;
     `
-	row := repo.DB.QueryRow(ctx, query, latitude, longitude)
+	row := repo.DB.QueryRow(ctx, query, latitude, longitude, from, to)
 
 	var val float64
 	err := row.Scan(&val)

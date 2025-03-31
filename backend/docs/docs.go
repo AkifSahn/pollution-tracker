@@ -17,7 +17,7 @@ const docTemplate = `{
     "paths": {
         "/api/air-quality/{latitude}/{longitude}": {
             "get": {
-                "description": "Gets air quality value for given location",
+                "description": "Gets air quality value for given location. Optional time range can be given",
                 "produces": [
                     "application/json"
                 ],
@@ -39,6 +39,18 @@ const docTemplate = `{
                         "name": "longitude",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Starting time",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "End time",
+                        "name": "to",
+                        "in": "query"
                     }
                 ],
                 "responses": {

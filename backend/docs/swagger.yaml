@@ -16,6 +16,15 @@ definitions:
       value:
         type: number
     type: object
+  pollution.PollutionValueResponse:
+    properties:
+      pollutant:
+        type: string
+      time:
+        type: string
+      value:
+        type: number
+    type: object
 info:
   contact: {}
   description: API documentation for pollution-tracker app
@@ -48,9 +57,11 @@ paths:
       - application/json
       responses:
         "200":
-          description: val
+          description: 'values: []PollutionValueResponse'
           schema:
-            type: string
+            items:
+              $ref: '#/definitions/pollution.PollutionValueResponse'
+            type: array
         "400":
           description: Cannot parse the given latitude/longitude value!
           schema:
@@ -130,6 +141,11 @@ paths:
     get:
       description: Gets pollution density for a given region
       parameters:
+      - description: region
+        in: path
+        name: region
+        required: true
+        type: string
       - description: from
         in: query
         name: from
@@ -148,7 +164,7 @@ paths:
           schema:
             type: string
         "400":
-          description: Failed to parse given time value(from)!
+          description: Failed to parse given time value(to)!
           schema:
             type: string
         "500":

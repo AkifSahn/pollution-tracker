@@ -46,9 +46,12 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "val",
+                        "description": "values: []PollutionValueResponse",
                         "schema": {
-                            "type": "string"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/pollution.PollutionValueResponse"
+                            }
                         }
                     },
                     "400": {
@@ -176,6 +179,13 @@
                 "parameters": [
                     {
                         "type": "string",
+                        "description": "region",
+                        "name": "region",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
                         "description": "from",
                         "name": "from",
                         "in": "query",
@@ -197,7 +207,7 @@
                         }
                     },
                     "400": {
-                        "description": "Failed to parse given time value(from)!",
+                        "description": "Failed to parse given time value(to)!",
                         "schema": {
                             "type": "string"
                         }
@@ -229,6 +239,20 @@
                     "type": "string"
                 },
                 "region": {
+                    "type": "string"
+                },
+                "time": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "number"
+                }
+            }
+        },
+        "pollution.PollutionValueResponse": {
+            "type": "object",
+            "properties": {
+                "pollutant": {
                     "type": "string"
                 },
                 "time": {

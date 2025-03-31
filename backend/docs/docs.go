@@ -55,9 +55,12 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "val",
+                        "description": "values: []PollutionValueResponse",
                         "schema": {
-                            "type": "string"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/pollution.PollutionValueResponse"
+                            }
                         }
                     },
                     "400": {
@@ -185,6 +188,13 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
+                        "description": "region",
+                        "name": "region",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
                         "description": "from",
                         "name": "from",
                         "in": "query",
@@ -206,7 +216,7 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Failed to parse given time value(from)!",
+                        "description": "Failed to parse given time value(to)!",
                         "schema": {
                             "type": "string"
                         }
@@ -238,6 +248,20 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "region": {
+                    "type": "string"
+                },
+                "time": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "number"
+                }
+            }
+        },
+        "pollution.PollutionValueResponse": {
+            "type": "object",
+            "properties": {
+                "pollutant": {
                     "type": "string"
                 },
                 "time": {

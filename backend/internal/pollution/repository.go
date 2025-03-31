@@ -26,21 +26,38 @@ func NewPollutionRepo(db *pgx.Conn) *PollutionRepoImpl {
 	}
 }
 
-func (repo *PollutionRepoImpl) GetPollutionValueByPosition(ctx context.Context, latitude, longitude float64, from, to time.Time) (float64, error) {
+func (repo *PollutionRepoImpl) GetPollutionValueByPosition(ctx context.Context, latitude, longitude float64, from, to time.Time) ([]PollutionValueResponse, error) {
 	query := `
-    SELECT value FROM air_pollution 
+    SELECT time, value, pollutant FROM air_pollution 
     WHERE latitude=$1 AND longitude=$2 
-    AND time BETWEEN $3 AND $4;
+    AND time BETWEEN $3 AND $4 
+    ORDER BY pollutant, time DESC;
     `
-	row := repo.DB.QueryRow(ctx, query, latitude, longitude, from, to)
-
-	var val float64
-	err := row.Scan(&val)
+	rows, err := repo.DB.Query(ctx, query, latitude, longitude, from, to)
 	if err != nil {
-		return -1, fmt.Errorf("Unable to scan - %s", err.Error())
+		return nil, fmt.Errorf("Unable to query - %s", err.Error())
+	}
+	defer rows.Close()
+
+	var pollutions []PollutionValueResponse
+	for rows.Next() {
+		var pollution PollutionValueResponse
+		var t time.Time
+		err = rows.Scan(&pollution.Time, &pollution.Value, &pollution.Pollutant)
+		if err != nil {
+			return nil, fmt.Errorf("Unable to scan - %s", err.Error())
+		}
+
+		fmt.Println("time: ", t)
+
+		pollutions = append(pollutions, pollution)
 	}
 
-	return val, nil
+	if rows.Err() != nil {
+		return nil, fmt.Errorf("rows Error: %v\n", rows.Err())
+	}
+
+	return pollutions, nil
 }
 
 func (repo *PollutionRepoImpl) GetAnomaliesWithinTimeRange(ctx context.Context, from, to time.Time) ([]Pollution, error) {

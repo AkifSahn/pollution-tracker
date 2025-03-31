@@ -3,7 +3,6 @@ package pollution
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"strconv"
 	"time"
 
@@ -31,16 +30,16 @@ func SetupRoutes(app *fiber.App) {
 //	@Description	Gets air quality value for given location. Optional time range can be given
 //	@Tags			pollution
 //	@Produce		json
-//	@Param			latitude	path		string	true	"latitude"
-//	@Param			longitude	path		string	true	"longitude"
+//	@Param			latitude	path		string						true	"latitude"
+//	@Param			longitude	path		string						true	"longitude"
 //
-//	@Param			from		query		string	false	"Starting time"
-//	@Param			to			query		string	false	"End time"
-//	@Failure		400			{string}	string	"Failed to parse given time - from"
-//	@Failure		400			{string}	string	"Failed to parse given time - to"
-//	@Failure		400			{string}	string	"Cannot parse the given latitude/longitude value!"
-//	@Failure		500			{string}	string	"Failed to fetch data from database!"
-//	@Success		200			{string}	string	"val"
+//	@Param			from		query		string						false	"Starting time"
+//	@Param			to			query		string						false	"End time"
+//	@Failure		400			{string}	string						"Failed to parse given time - from"
+//	@Failure		400			{string}	string						"Failed to parse given time - to"
+//	@Failure		400			{string}	string						"Cannot parse the given latitude/longitude value!"
+//	@Failure		500			{string}	string						"Failed to fetch data from database!"
+//	@Success		200			{object}	[]PollutionValueResponse	"values: []PollutionValueResponse"
 //	@Router			/api/air-quality/{latitude}/{longitude} [get]
 func GetAirQualityLocation(c *fiber.Ctx) error {
 
@@ -68,8 +67,6 @@ func GetAirQualityLocation(c *fiber.Ctx) error {
 	fromStr := c.Query("from", time.Now().Add(-24*time.Hour).Format(format))
 	toStr := c.Query("to", time.Now().Format(format))
 
-	fmt.Println(fromStr)
-	fmt.Println(toStr)
 	from, err := time.Parse(format, fromStr)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -89,7 +86,7 @@ func GetAirQualityLocation(c *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	val, err := repo.GetPollutionValueByPosition(ctx, latitude, longitude, from, to)
+	vals, err := repo.GetPollutionValueByPosition(ctx, latitude, longitude, from, to)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to fetch data from database! " + err.Error(),
@@ -97,7 +94,7 @@ func GetAirQualityLocation(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"value": val,
+		"values": vals,
 	})
 }
 
@@ -157,10 +154,12 @@ func GetAnomaliesOfRange(c *fiber.Ctx) error {
 //	@Description	Gets pollution density for a given region
 //	@Tags			pollution
 //	@Produce		json
+//	@Param			region	path		string	true	"region"
 //	@Param			from	query		string	true	"from"
 //	@Param			to		query		string	true	"to"
+//
 //	@Success		400		{string}	string	"Failed to parse given time value(from)!"
-//	@Success		400		{string}	string	"Failed to parse given time value(from)!"
+//	@Success		400		{string}	string	"Failed to parse given time value(to)!"
 //	@Success		500		{string}	string	"Failed to fetch region density from database"
 //	@Success		200		{string}	string	"density"
 //	@Router			/api/regions-density/{region} [get]

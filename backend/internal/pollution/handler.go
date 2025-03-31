@@ -218,6 +218,7 @@ func GetPollutionDensityRegion(c *fiber.Ctx) error {
 func PostPollutionEntry(c *fiber.Ctx) error {
 	var body Pollution
 
+	body.Time = time.Now()
 	if err := c.BodyParser(&body); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Failed to parse request body" + err.Error(),

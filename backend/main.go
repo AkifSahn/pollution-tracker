@@ -9,14 +9,15 @@ import (
 	"github.com/AkifSahn/pollution-tracker/internal/pollution"
 	"github.com/AkifSahn/pollution-tracker/internal/rabbitmq"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/swagger"
 
 	_ "github.com/AkifSahn/pollution-tracker/docs"
 )
 
-//	@title			pollution-tracker API
-//	@description	API documentation for pollution-tracker app
+// @title			pollution-tracker API
+// @description	API documentation for pollution-tracker app
 func main() {
 
 	app := fiber.New(fiber.Config{
@@ -37,6 +38,7 @@ func main() {
 
 	go ingest.ListenIngestion()
 
+	app.Use(cors.New())
 	app.Use(logger.New())
 	pollution.SetupRoutes(app)
 

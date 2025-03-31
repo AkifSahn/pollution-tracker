@@ -9,8 +9,6 @@ definitions:
         type: number
       pollutant:
         type: string
-      region:
-        type: string
       time:
         type: string
       value:
@@ -137,24 +135,32 @@ paths:
       summary: Posts pollution entry
       tags:
       - pollution
-  /api/regions-density/{region}:
+  /api/region-density/{latitude}/{longitude}/{radius}:
     get:
-      description: Gets pollution density for a given region
+      description: Gets pollution density for a given radius
       parameters:
-      - description: region
+      - description: latitude
         in: path
-        name: region
+        name: latitude
+        required: true
+        type: string
+      - description: longitude
+        in: path
+        name: longitude
+        required: true
+        type: string
+      - description: radius
+        in: path
+        name: radius
         required: true
         type: string
       - description: from
         in: query
         name: from
-        required: true
         type: string
       - description: to
         in: query
         name: to
-        required: true
         type: string
       produces:
       - application/json
@@ -164,7 +170,7 @@ paths:
           schema:
             type: string
         "400":
-          description: Failed to parse given time value(to)!
+          description: Failed to parse given radius value!
           schema:
             type: string
         "500":

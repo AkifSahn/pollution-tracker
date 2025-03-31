@@ -175,9 +175,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/regions-density/{region}": {
+        "/api/region-density/{latitude}/{longitude}/{radius}": {
             "get": {
-                "description": "Gets pollution density for a given region",
+                "description": "Gets pollution density for a given radius",
                 "produces": [
                     "application/json"
                 ],
@@ -188,8 +188,22 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "region",
-                        "name": "region",
+                        "description": "latitude",
+                        "name": "latitude",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "longitude",
+                        "name": "longitude",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "radius",
+                        "name": "radius",
                         "in": "path",
                         "required": true
                     },
@@ -197,15 +211,13 @@ const docTemplate = `{
                         "type": "string",
                         "description": "from",
                         "name": "from",
-                        "in": "query",
-                        "required": true
+                        "in": "query"
                     },
                     {
                         "type": "string",
                         "description": "to",
                         "name": "to",
-                        "in": "query",
-                        "required": true
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -216,7 +228,7 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Failed to parse given time value(to)!",
+                        "description": "Failed to parse given radius value!",
                         "schema": {
                             "type": "string"
                         }
@@ -245,9 +257,6 @@ const docTemplate = `{
                     "type": "number"
                 },
                 "pollutant": {
-                    "type": "string"
-                },
-                "region": {
                     "type": "string"
                 },
                 "time": {

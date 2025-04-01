@@ -1,47 +1,26 @@
-<!-- Content.vue -->
+<!-- HeatMap.vue -->
 <template>
-    <div class="max-w-7xl mx-auto px-4 py-8">
-        <button
-            @click="fetchData"
-            class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 mb-4"
-            >
-            Fetch & Map Pollution Heatmap
-        </button>
+    <div class="max-w-7xl mx-auto px-4 py-8 my-10">
 
+            <div id="map" class="flex h-96 w-full rounded-md"></div>
 
-            <div class="flex justify-between items-center">
-                <!-- Map Container -->
-                <div id="map" class="flex h-96 w-5/6 rounded-md"></div>
+            <!-- Buttons -->
+            <div class="flex justify-center gap-10 my-3">
+                <button
+                    @click="fetchData"
+                    class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">
+                    Fetch & Map Heatmap
+                </button>
 
-                <form class="w-full max-w-md mx-auto p-4 bg-white rounded-xl shadow space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Latitude</label>
-                        <input type="text" class="mt-1 block w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="latitude" />
+                <div class="flex flex-col justify-center items-center">
+                    <p>Zaman aralığı</p>
+                    <div class="flex justify-center items-center gap-3"> 
+                        <label class="block w-4 text-center">{{ rangeValue }}h</label>
+                        <input v-model="rangeValue" class="block" type="range" name="slider" value="24" min="1" max="24">
                     </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Longitude</label>
-                        <input type="text" class="mt-1 block w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="longitude" />
-                    </div>
-
-                    <button @click="fetchData" type="submit" class="w-full bg-blue-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-blue-700 transition">
-                        Ekle
-                    </button>
-                </form>
+                </div>
             </div>
 
-            <!-- Optional: List of data below the map -->
-            <div v-if="pollutions.length > 0" class="mt-4 bg-gray-100 p-4 rounded-md">
-                <h3 class="text-lg font-bold mb-2">Pollution Data</h3>
-                <ul class="space-y-2">
-                    <li v-for="(item, index) in pollutions" :key="index" class="border-b pb-2">
-                        <p><strong>Time:</strong> {{ item.time }}</p>
-                        <p><strong>Location:</strong> Lat {{ item.latitude }}, Lon {{ item.longitude }}</p>
-                        <p><strong>Value (Intensity):</strong> {{ item.value }} ({{ item.pollutant }})</p>
-                        <p><strong>Anomaly:</strong> {{ item.is_anomaly ? 'Yes' : 'No' }}</p>
-                    </li>
-                </ul>
-            </div>
     </div>
 </template>
 
@@ -57,6 +36,8 @@
                 pollutions: [],
                 map: null,
                 heatLayer: null,
+
+                rangeValue: 24,
             };
         },
         mounted() {
@@ -65,11 +46,18 @@
         },
         methods: {
             initMap() {
-                this.map = L.map('map').setView([41.0082,28.9784], 5); // Center on İstanbul
+                this.map = L.map('map', {
+                    worldCopyJump: false
+                }).setView([41.0082,28.9784], 5); // Center on İstanbul
+
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+                    noWrap: true,
                 }).addTo(this.map);
 
+                const bounds = [[-90, -180], [90, 180]];
+                this.map.setMaxBounds(bounds);
+                this.map.options.minZoom = 2;
             },
 
             async fetchData() {
@@ -77,9 +65,28 @@
                 this.pollutions = [];
 
                 try {
-                    const response = await fetch(
-                        'http://127.0.0.1:3000/api/anomalies?from=2025-03-01%2010%3A10%3A10&to=2025-03-31%2023%3A10%3A10'
-                    );
+                    const now = new Date();
+                    const yesterday = new Date(now);
+                    yesterday.setHours(now.getHours()-this.rangeValue);
+
+                    function formatDate(date) {
+                        const year = date.getFullYear();
+                        const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+                        const day = String(date.getDate()).padStart(2, '0');
+                        const hours = String(date.getHours()).padStart(2, '0');
+                        const minutes = String(date.getMinutes()).padStart(2, '0');
+                        const seconds = String(date.getSeconds()).padStart(2, '0');
+                        return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+                    }
+
+                    const toDate = formatDate(now);
+                    const fromDate = formatDate(yesterday);
+                    console.log(toDate)
+                    console.log(fromDate)
+
+                    const url = `http://127.0.0.1:3000/api/anomalies?from=${encodeURIComponent(fromDate)}&to=${encodeURIComponent(toDate)}`;
+                    console.log(url)
+                    const response = await fetch(url);
                     const jsonData = await response.json();
                     this.pollutions = jsonData.pollutions || []; // Fallback to empty array if pollutions is missing
                     this.updateHeatmap();
@@ -96,17 +103,25 @@
                     this.map.removeLayer(this.heatLayer);
                 }
 
+                // // Remove previous markers
+                // this.map.eachLayer(layer => {
+                //     if (layer instanceof L.Marker) {
+                //         this.map.removeLayer(layer);
+                //     }
+                // });
+
+                // this.pollutions.forEach(item => {
+                //     const marker = L.marker([item.latitude, item.longitude])
+                //         .addTo(this.map)
+                //         .bindPopup(`lat: ${item.latitude}<br>lon: ${item.longitude}<br>val: ${item.value}`)
+                // });
+
                 const heatData = this.pollutions.map(item => [
                     item.latitude,
                     item.longitude,
-                    item.value*10 // Adjust divisor based on your value range
+                    item.value*100
                 ]);
 
-                this.pollutions.forEach(item => {
-                    const marker = L.marker([item.latitude, item.longitude])
-                        .addTo(this.map)
-                        .bindPopup("test")
-                });
 
                 this.heatLayer = L.heatLayer(heatData, {
                     radius: 25,

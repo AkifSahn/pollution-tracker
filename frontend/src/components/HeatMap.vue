@@ -2,21 +2,23 @@
 <template>
     <div class="max-w-7xl mx-auto px-4 py-8 my-10">
 
-            <div id="map" class="flex h-96 w-full rounded-md"></div>
+            <div id="map" class="flex border-gray-600 border-2 shadow-lg h-96 w-full rounded-md z-10 "></div>
 
             <!-- Buttons -->
             <div class="flex justify-center gap-10 my-3">
+                <!--
                 <button
                     @click="fetchData"
                     class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">
                     Fetch & Map Heatmap
                 </button>
+                -->
 
                 <div class="flex flex-col justify-center items-center">
                     <p>Zaman aralığı</p>
                     <div class="flex justify-center items-center gap-3"> 
                         <label class="block w-4 text-center">{{ rangeValue }}h</label>
-                        <input v-model="rangeValue" class="block" type="range" name="slider" value="24" min="1" max="24">
+                        <input @input="fetchData" v-model="rangeValue" class="block" type="range" name="slider" value="24" min="1" max="24">
                     </div>
                 </div>
             </div>

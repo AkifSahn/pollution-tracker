@@ -1,5 +1,5 @@
 <template>
-    <nav class="flex bg-linear-to-b from-cyan-400 to-cyan-600 justify-between items-center px-6 py-3 h-16 shadow-lg ">
+    <nav class="flex bg-linear-to-b bg-cyan-600 justify-between items-center px-6 py-3 h-16 shadow-lg ">
         <!-- Logo -->
         <div>
             Logo

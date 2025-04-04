@@ -14,6 +14,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/swagger"
 	"github.com/gofiber/websocket/v2"
+	amqp "github.com/rabbitmq/amqp091-go"
 
 	_ "github.com/AkifSahn/pollution-tracker/docs"
 )
@@ -40,6 +41,11 @@ func main() {
 
 	go ingest.ListenIngestion()
 
+	hub := notification.NewHub()
+	go hub.Run()
+
+	go notification.ListenAndConsumeNotifications(hub)
+
 	app.Use(cors.New())
 	app.Use(logger.New())
 
@@ -52,7 +58,9 @@ func main() {
 	})
 
 	pollution.SetupRoutes(app)
-	app.Get("/ws", websocket.New(notification.NotificationHandler))
+	app.Get("/ws", websocket.New(func(c *websocket.Conn) {
+		notification.NewWs(hub, c)
+	}))
 
 	app.Get("/swagger/*", swagger.HandlerDefault)
 

@@ -26,6 +26,7 @@ func ListenIngestion() {
 	}
 
 	repo := pollution.NewPollutionRepo(database.DB)
+	service := pollution.NewPollutionService(repo)
 	go func() {
 		for d := range msgs {
 			var data pollution.Pollution
@@ -37,12 +38,11 @@ func ListenIngestion() {
 			}
 
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-			err = repo.InsertPollution(ctx, data)
-			cancel()
-			if err != nil {
+			// Handle anomaly detection before inserting into the database
+			if err = service.ProcessAndInsertPollutionEntry(ctx, data); err != nil {
 				log.Printf("Failed to insert the data into database - %s", err.Error())
-				continue
 			}
+			cancel()
 		}
 	}()
 }

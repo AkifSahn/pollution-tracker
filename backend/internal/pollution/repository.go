@@ -9,9 +9,11 @@ import (
 )
 
 type PollutionRepo interface {
-	GetPollutionValueByPosition(longitude, latitude float64) (float64, error)
-	GetAnomaliesWithinTimeRange(from, to time.Time) ([]Pollution, error)
+	GetPollutionValueByPosition(ctx context.Context, latitude, longitude float64, from, to time.Time) ([]PollutionValueResponse, error)
+	GetAnomaliesWithinTimeRange(ctx context.Context, from, to time.Time) ([]Pollution, error)
 	GetPollutionDensityByRegion(ctx context.Context, radius, latitude, longitude float64, from, to time.Time) (float64, error)
+
+	GetMeanAndStd(ctx context.Context, pollutant string, radius, latitude, longitude float64, from, to time.Time) (float64, float64, error)
 
 	InsertPollution(ctx context.Context, pollution Pollution) error
 }
@@ -109,6 +111,26 @@ func (repo *PollutionRepoImpl) GetPollutionDensityByRegion(ctx context.Context, 
 	}
 
 	return density, nil
+}
+
+func (repo *PollutionRepoImpl) GetMeanAndStd(ctx context.Context, pollutant string, radius, latitude, longitude float64, from, to time.Time) (float64, float64, error) {
+	query := `
+        SELECT COALESCE(AVG(value), 0), COALESCE(STDDEV_POP(value), 0)
+        FROM air_pollution
+        WHERE pollutant = $1
+          AND time BETWEEN $2 AND $3 
+          AND ST_DWithin(
+              geog,
+              ST_MakePoint($4,$5)::geography,
+              $6*1000
+        );
+    `
+	row := repo.DB.QueryRow(ctx, query, pollutant, from, to, longitude, latitude, radius)
+	var mean, stddev float64
+	if err := row.Scan(&mean, &stddev); err != nil {
+		return 0, 0, fmt.Errorf("Unable to scan %s", err.Error())
+	}
+	return mean, stddev, nil
 }
 
 func (repo *PollutionRepoImpl) InsertPollution(ctx context.Context, pollution Pollution) error {

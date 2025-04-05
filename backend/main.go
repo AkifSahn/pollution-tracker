@@ -14,7 +14,6 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/swagger"
 	"github.com/gofiber/websocket/v2"
-	amqp "github.com/rabbitmq/amqp091-go"
 
 	_ "github.com/AkifSahn/pollution-tracker/docs"
 )

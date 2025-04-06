@@ -11,10 +11,10 @@
                     <p>Zaman aralığı</p>
                     <div class="flex justify-center items-center gap-3"> 
                         <label class="block w-14 text-center">{{ rangeValueDay }} gün</label>
-                        <input @input="fetchData" v-model="rangeValueDay" class="block" type="range" name="slider" value="0" min="0" max="30">
+                        <input @input="fetchData" v-model="rangeValueDay" class="block accent-red-400" type="range" name="slider" value="0" min="0" max="30">
 
                         <label class="block w-14 text-center">{{ rangeValueHour }} saat</label>
-                        <input @input="fetchData" v-model="rangeValueHour" class="block" type="range" name="slider" value="23" min="1" max="23">
+                        <input @input="fetchData" v-model="rangeValueHour" class="block accent-red-400" type="range" name="slider" value="23" min="1" max="23">
                     </div>
                 </div>
             </div>
@@ -71,7 +71,7 @@
 
                     function formatDate(date) {
                         const year = date.getFullYear();
-                        const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+                        const month = String(date.getMonth() + 1).padStart(2, '0');
                         const day = String(date.getDate()).padStart(2, '0');
                         const hours = String(date.getHours()).padStart(2, '0');
                         const minutes = String(date.getMinutes()).padStart(2, '0');
@@ -87,7 +87,7 @@
                     console.log(url)
                     const response = await fetch(url);
                     const jsonData = await response.json();
-                    this.pollutions = jsonData.pollutions || []; // Fallback to empty array if pollutions is missing
+                    this.pollutions = jsonData.pollutions || [];
                     this.updateHeatmap();
                 } catch (error) {
                     console.error('Error fetching data:', error);

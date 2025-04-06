@@ -1,13 +1,12 @@
 <template>
-    <nav class="flex bg-linear-to-b bg-cyan-600 justify-between items-center px-6 py-3 h-16 shadow-lg ">
-        <!-- Logo -->
+    <nav class="flex bg-red-700 text-white justify-between items-center px-6 py-3 h-16 shadow-lg ">
         <div>
             Logo
         </div>
         <h1>Pollution Tracker</h1>
         <div>
             <button @click="toggleNotifications" 
-                class="bg-green-200 hover:bg-green-300 duration-300 shadow-lg px-3 py-1 rounded-sm hover:cursor-pointer" 
+                class="bg-orange-500 hover:bg-orange-400 duration-300 shadow-lg px-3 py-1 rounded-sm hover:cursor-pointer" 
                 type="submit">
                 <span v-if="notifications.length === 0">
                     <font-awesome-icon :icon="['far', 'bell']"  />

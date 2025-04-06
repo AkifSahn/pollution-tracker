@@ -6,7 +6,7 @@ import RegionView from './components/RegionView.vue'
 </script>
 
 <template>
-    <div class="bg-slate-100 h-screen">
+    <div class="bg-white h-screen">
         <NotificationPanel/>
         <HeatMap/>
     </div>

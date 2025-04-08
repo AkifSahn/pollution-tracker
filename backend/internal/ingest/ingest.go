@@ -25,7 +25,7 @@ func ListenIngestion() {
 		log.Fatalf("Failed to register a consumer: %s", err.Error())
 	}
 
-	repo := pollution.NewPollutionRepo(database.DB)
+	repo := pollution.NewPollutionRepo(database.DBPool)
 	service := pollution.NewPollutionService(repo)
 	go func() {
 		for d := range msgs {

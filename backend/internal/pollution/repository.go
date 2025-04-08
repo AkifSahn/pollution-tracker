@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type PollutionRepo interface {
 	GetPollutionValueByPosition(ctx context.Context, latitude, longitude float64, from, to time.Time) ([]PollutionValueResponse, error)
 	GetAnomaliesWithinTimeRange(ctx context.Context, from, to time.Time) ([]Pollution, error)
+	GetAllPolutionWithinTimeRange(ctx context.Context, from, to time.Time) ([]Pollution, error)
 	GetPollutionDensityByRegion(ctx context.Context, radius, latitude, longitude float64, from, to time.Time) (float64, error)
 
 	GetMeanAndStd(ctx context.Context, pollutant string, radius, latitude, longitude float64, from, to time.Time) (float64, float64, error)
@@ -19,10 +20,10 @@ type PollutionRepo interface {
 }
 
 type PollutionRepoImpl struct {
-	DB *pgx.Conn
+	DB *pgxpool.Pool
 }
 
-func NewPollutionRepo(db *pgx.Conn) *PollutionRepoImpl {
+func NewPollutionRepo(db *pgxpool.Pool) *PollutionRepoImpl {
 	return &PollutionRepoImpl{
 		DB: db,
 	}
@@ -89,6 +90,36 @@ func (repo *PollutionRepoImpl) GetAnomaliesWithinTimeRange(ctx context.Context, 
 	}
 
 	return pollutions, nil
+}
+
+func (repo *PollutionRepoImpl) GetAllPolutionWithinTimeRange(ctx context.Context, from, to time.Time) ([]Pollution, error) {
+	query := `
+    SELECT latitude, longitude, value, is_anomaly, pollutant from air_pollution
+    WHERE time BETWEEN $1 AND $2;
+    `
+	rows, err := repo.DB.Query(ctx, query, from, to)
+	if err != nil {
+		return nil, fmt.Errorf("Unable to query - %s", err.Error())
+	}
+	defer rows.Close()
+
+	var pollutions []Pollution
+	for rows.Next() {
+		var pollution Pollution
+		err = rows.Scan(&pollution.Latitude, &pollution.Longitude,
+			&pollution.Value, &pollution.IsAnomaly, &pollution.Pollutant)
+		if err != nil {
+			return nil, fmt.Errorf("Unable to scan - %s", err.Error())
+		}
+		pollutions = append(pollutions, pollution)
+	}
+
+	if rows.Err() != nil {
+		return nil, fmt.Errorf("rows Error: %v\n", rows.Err())
+	}
+
+	return pollutions, nil
+
 }
 
 func (repo *PollutionRepoImpl) GetPollutionDensityByRegion(ctx context.Context, radius, latitude, longitude float64, from, to time.Time) (float64, error) {

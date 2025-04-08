@@ -83,7 +83,7 @@
                     console.log(toDate)
                     console.log(this.dataStartDate)
 
-                    const url = `http://127.0.0.1:3000/api/anomalies?from=${encodeURIComponent(this.dataStartDate)}&to=${encodeURIComponent(toDate)}`;
+                    const url = `http://127.0.0.1:3000/api/pollutions?from=${encodeURIComponent(this.dataStartDate)}&to=${encodeURIComponent(toDate)}`;
                     console.log(url)
                     const response = await fetch(url);
                     const jsonData = await response.json();
@@ -106,7 +106,7 @@
                 const heatData = this.pollutions.map(item => [
                     item.latitude,
                     item.longitude,
-                    item.value*100
+                    item.value
                 ]);
 
 

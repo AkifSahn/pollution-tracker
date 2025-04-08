@@ -20,6 +20,7 @@ func SetupRoutes(app *fiber.App) {
 	api.Get("air-quality/:latitude/:longitude", GetAirQualityLocation)
 	api.Get("anomalies", GetAnomaliesOfRange)
 	api.Get("region-density/:latitude/:longitude/:radius", GetPollutionDensityRegion)
+	api.Get("pollutions", GetAllPolution)
 
 	api.Post("ingest/manual", PostPollutionEntry)
 }
@@ -82,7 +83,7 @@ func GetAirQualityLocation(c *fiber.Ctx) error {
 	}
 	// --------
 
-	repo := NewPollutionRepo(database.DB)
+	repo := NewPollutionRepo(database.DBPool)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -131,12 +132,49 @@ func GetAnomaliesOfRange(c *fiber.Ctx) error {
 		})
 	}
 
-	repo := NewPollutionRepo(database.DB)
+	repo := NewPollutionRepo(database.DBPool)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	// Get anomalies from database
 	pollutions, err := repo.GetAnomaliesWithinTimeRange(ctx, from, to)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to fetch pollution entries from database " + err.Error(),
+		})
+	}
+
+	return c.JSON(fiber.Map{
+		"pollutions": pollutions,
+	})
+}
+
+func GetAllPolution(c *fiber.Ctx) error {
+	fromStr := c.Query("from")
+	toStr := c.Query("to")
+
+	// Parse the string times into time.Time
+	format := "2006-01-02 15:04:05"
+	from, err := time.Parse(format, fromStr)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Failed to parse given time value(from)!",
+		})
+	}
+
+	to, err := time.Parse(format, toStr)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Failed to parse given time value(to)!",
+		})
+	}
+
+	repo := NewPollutionRepo(database.DBPool)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// Get anomalies from database
+	pollutions, err := repo.GetAllPolutionWithinTimeRange(ctx, from, to)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to fetch pollution entries from database " + err.Error(),
@@ -215,7 +253,7 @@ func GetPollutionDensityRegion(c *fiber.Ctx) error {
 	}
 	// --------
 
-	repo := NewPollutionRepo(database.DB)
+	repo := NewPollutionRepo(database.DBPool)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 

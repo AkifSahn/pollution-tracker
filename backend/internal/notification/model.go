@@ -5,4 +5,6 @@ type Notification struct {
 	Message   string  `json:"message"`
 	Latitude  float64 `json:"latitude"`
 	Longitude float64 `json:"longitude"`
+	Value     float64 `json:"value"`
+	Pollutant string  `json:"pollutant"`
 }

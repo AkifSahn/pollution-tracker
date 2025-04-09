@@ -51,9 +51,11 @@ func (s *PollutionService) ProcessAndInsertPollutionEntry(ctx context.Context, e
 	if entry.IsAnomaly {
 		notification := notification.Notification{
 			Type:      1,
-			Message:   fmt.Sprintf("Anomaly detected for %s: value %.2f", entry.Pollutant, entry.Value),
+			Message:   "Anomaly detected!",
 			Latitude:  entry.Latitude,
 			Longitude: entry.Longitude,
+			Value:     entry.Value,
+			Pollutant: entry.Pollutant,
 		}
 
 		msg, err := json.Marshal(notification)

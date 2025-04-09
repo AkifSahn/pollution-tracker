@@ -27,6 +27,9 @@
     import 'leaflet/dist/leaflet.css';
     import 'leaflet.heat';
 
+    import { useMapStore } from "../stores/mapStore";
+    import { watch } from "vue";
+
     export default {
         data() {
             return {
@@ -43,6 +46,19 @@
         mounted() {
             this.initMap();
             this.fetchData();
+
+            const mapStore = useMapStore()
+
+            watch(
+                () => mapStore.markers,
+                (newMarkers) => {
+                    newMarkers.forEach((marker) => {
+                        L.marker([marker.latitude, marker.longitude])
+                            .bindPopup(`Value: ${marker.value}`)
+                            .addTo(this.map)
+                    })
+                },
+            )
         },
         methods: {
             initMap() {
@@ -106,7 +122,7 @@
                 const heatData = this.pollutions.map(item => [
                     item.latitude,
                     item.longitude,
-                    item.value
+                    item.value*5
                 ]);
 
 

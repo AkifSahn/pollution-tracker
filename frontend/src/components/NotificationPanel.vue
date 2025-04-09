@@ -26,9 +26,9 @@
                     v-for="(notification, index) in notifications" :key="index"
                     class="p-2 bg-gray-100 text-black rounded text-sm"
                     >
-                    <div class="flex justify-between">
-                        <span>{{ notification }} </span>
-                        <button @click="popNotification(index)" class="bg-orange-500 hover:bg-orange-400 px-2 py-1 rounded-sm" type="submit">X</button>
+                    <div class="flex justify-between items-center">
+                        <span v-html="notification"></span>
+                        <button @click="popNotification(index)" class="bg-orange-500 hover:bg-orange-400 hover:cursor-pointer px-2 py-1 h-10 rounded-sm" type="submit">X</button>
                     </div>
                 </li> 
                 <li v-if="notifications.length === 0"
@@ -43,6 +43,8 @@
 </template>
 
 <script>
+    import {useMapStore} from '../stores/mapStore'
+
     export default{
         data(){
             return {
@@ -60,19 +62,30 @@
                 console.log(this.showNotifications);
             },
             popNotification(index){
-                this.notifications.pop(index)
+                this.notifications.splice(index, 1)
             },
 
             initWs(){
+                const mapStore = useMapStore();
                 this.ws = new WebSocket("ws://127.0.0.1:3000/ws")
                 this.ws.onopen = (e) => {
                     console.log("Websocket connection established")
                 };
                 this.ws.onmessage = (e) => {
                     let d = JSON.parse(e.data)
-                    console.log("Data arrived: ", d.message)
-                    this.notifications.push(d.message) // For test purposes, only display message part
+                    this.notifications.push(`${d.message}<br>pollutant: ${d.pollutant}<br>lat: ${d.latitude}, lng: ${d.longitude}<br>val: ${d.value}`)
+
+                    // Push the notification to Pinia store
+                    if (d.latitude && d.longitude && d.value){
+                        console.log("Adding to store")
+                        mapStore.addMarker({
+                            latitude: d.latitude,
+                            longitude: d.longitude,
+                            value: d.value,
+                        })
+                    }
                 };
+
                 this.ws.onclose = (e)=>{
                     this.ws = null
                     console.log("Ws connection closed")

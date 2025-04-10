@@ -19,7 +19,8 @@ func SetupRoutes(app *fiber.App) {
 	// // Endpoints for auth handlers
 	api.Get("air-quality/:latitude/:longitude", GetAirQualityLocation)
 	api.Get("anomalies", GetAnomaliesOfRange)
-	api.Get("region-density/:latitude/:longitude/:radius", GetPollutionDensityRegion)
+	api.Get("region/density/:latitude/:longitude/:radius", GetPollutionDensityRegion)
+	api.Get("region/density/:pollutant", GetPollutionDensityOfRect)
 	api.Get("pollutions", GetAllPolution)
 
 	api.Post("ingest/manual", PostPollutionEntry)
@@ -204,7 +205,7 @@ func GetAllPolution(c *fiber.Ctx) error {
 //	@Failure		400			{string}	string	"Failed to parse given radius value!"
 //	@Failure		500			{string}	string	"Failed to fetch region density from database"
 //	@Success		200			{string}	string	"density"
-//	@Router			/api/region-density/{latitude}/{longitude}/{radius} [get]
+//	@Router			/api/region/density/{latitude}/{longitude}/{radius} [get]
 func GetPollutionDensityRegion(c *fiber.Ctx) error {
 	radiusStr := c.Params("radius")
 	latStr := c.Params("latitude")
@@ -267,6 +268,71 @@ func GetPollutionDensityRegion(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"radius":  radius,
 		"density": density,
+	})
+}
+
+// GetPollutionDensityRect
+//
+//	@Summary		Gets pollution density of rect
+//	@Description	Gets pollution density for a given rect
+//	@Tags			pollution
+//	@Produce		json
+//
+//	@Param			latFrom		query		float64	false	"latFrom"
+//	@Param			latTo		query		float64	false	"latTo"
+//	@Param			longFrom	query		float64	false	"longFrom"
+//	@Param			longTo		query		float64	false	"longTo"
+//	@Param			from		query		string	false	"from"
+//	@Param			to			query		string	false	"to"
+//
+//	@Param			pollutant	path		string	false	"pollutant"
+//
+//	@Failure		400			{string}	string	"Failed to parse given time value(to/from)!"
+//	@Failure		500			{string}	string	"Failed to fetch rect density from database"
+//	@Success		200			{string}	string	"densities"
+//	@Router			/api/region/density/{pollutant} [get]
+func GetPollutionDensityOfRect(c *fiber.Ctx) error {
+	format := "2006-01-02 15:04:05"
+	fromStr := c.Query("from", time.Now().Add(-24*time.Hour).Format(format))
+	toStr := c.Query("to", time.Now().Format(format))
+
+	latFrom := c.QueryFloat("latFrom")
+	latTo := c.QueryFloat("latTo")
+
+	longFrom := c.QueryFloat("longFrom")
+	longTo := c.QueryFloat("longTo")
+
+	pollutant := c.Params("pollutant")
+
+	// Parse the string times into time.Time
+	from, err := time.Parse(format, fromStr)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Failed to parse given time value(from)! " + err.Error(),
+		})
+	}
+
+	to, err := time.Parse(format, toStr)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Failed to parse given time value(to)!",
+		})
+	}
+	// --------
+
+	repo := NewPollutionRepo(database.DBPool)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	densities, err := repo.GetPollutionDensityOfRect(ctx, latFrom, latTo, longFrom, longTo, from, to, 5*time.Minute, pollutant)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to fetch rect densities from database: " + err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"densities": densities,
 	})
 }
 

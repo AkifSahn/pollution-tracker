@@ -180,4 +180,54 @@ paths:
       summary: Gets pollution density
       tags:
       - pollution
+  /api/region/density/{pollutant}:
+    get:
+      description: Gets pollution density for a given rect
+      parameters:
+      - description: latFrom
+        in: query
+        name: latFrom
+        type: number
+      - description: latTo
+        in: query
+        name: latTo
+        type: number
+      - description: longFrom
+        in: query
+        name: longFrom
+        type: number
+      - description: longTo
+        in: query
+        name: longTo
+        type: number
+      - description: from
+        in: query
+        name: from
+        type: string
+      - description: to
+        in: query
+        name: to
+        type: string
+      - description: pollutant
+        in: path
+        name: pollutant
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: densities
+          schema:
+            type: string
+        "400":
+          description: Failed to parse given time value(to/from)!
+          schema:
+            type: string
+        "500":
+          description: Failed to fetch rect density from database
+          schema:
+            type: string
+      summary: Gets pollution density of rect
+      tags:
+      - pollution
 swagger: "2.0"

@@ -241,6 +241,82 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/region/density/{pollutant}": {
+            "get": {
+                "description": "Gets pollution density for a given rect",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "pollution"
+                ],
+                "summary": "Gets pollution density of rect",
+                "parameters": [
+                    {
+                        "type": "number",
+                        "description": "latFrom",
+                        "name": "latFrom",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "description": "latTo",
+                        "name": "latTo",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "description": "longFrom",
+                        "name": "longFrom",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "description": "longTo",
+                        "name": "longTo",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "from",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "to",
+                        "name": "to",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "pollutant",
+                        "name": "pollutant",
+                        "in": "path"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "densities",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Failed to parse given time value(to/from)!",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to fetch rect density from database",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {

@@ -13,6 +13,7 @@ type PollutionRepo interface {
 	GetAnomaliesWithinTimeRange(ctx context.Context, from, to time.Time) ([]Pollution, error)
 	GetAllPolutionWithinTimeRange(ctx context.Context, from, to time.Time) ([]Pollution, error)
 	GetPollutionDensityByRegion(ctx context.Context, radius, latitude, longitude float64, from, to time.Time) (float64, error)
+	GetPollutionDensityOfRect(ctx context.Context, latFrom, latTo, longFrom, longTo float64, from, to time.Time, step time.Duration, pollutant string) ([]PollutionDensity, error)
 
 	GetMeanAndStd(ctx context.Context, pollutant string, radius, latitude, longitude float64, from, to time.Time) (float64, float64, error)
 
@@ -142,6 +143,48 @@ func (repo *PollutionRepoImpl) GetPollutionDensityByRegion(ctx context.Context, 
 	}
 
 	return density, nil
+}
+
+func (repo *PollutionRepoImpl) GetPollutionDensityOfRect(ctx context.Context, latFrom, latTo, longFrom, longTo float64, from, to time.Time, step time.Duration, pollutant string) ([]PollutionDensity, error) {
+	query := `
+    SELECT time_bucket($1, time) AS bucket, AVG(value) FROM air_pollution
+    WHERE latitude BETWEEN $2 AND $3 
+        AND longitude BETWEEN $4 AND $5 
+        AND time BETWEEN $6 AND $7 
+        AND pollutant = $8
+    GROUP BY bucket 
+    ORDER BY bucket;
+    `
+
+	rows, err := repo.DB.Query(ctx, query,
+		step,
+		latFrom,
+		latTo,
+		longFrom,
+		longTo,
+		from,
+		to,
+		pollutant,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("Unable to query - %s", err.Error())
+	}
+
+	defer rows.Close()
+
+	var result []PollutionDensity
+	for rows.Next() {
+		var density PollutionDensity
+		density.Pollutant = pollutant
+		err := rows.Scan(&density.Time, &density.Density)
+		if err != nil {
+			return nil, fmt.Errorf("Unable to scan - %s", err.Error())
+		}
+		result = append(result, density)
+	}
+
+	return result, nil
+
 }
 
 func (repo *PollutionRepoImpl) GetMeanAndStd(ctx context.Context, pollutant string, radius, latitude, longitude float64, from, to time.Time) (float64, float64, error) {

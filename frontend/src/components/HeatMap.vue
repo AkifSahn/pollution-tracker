@@ -1,8 +1,9 @@
 <!-- HeatMap.vue -->
 <template>
-    <div class="max-w-7xl mx-auto px-4 py-8 my-10">
+    <div class="bg-white py-32">
+        <div class="max-w-7xl mx-auto px-4">
 
-        <p><i><b>{{ dataStartDate }}</b></i> tarihinden itibaren olan veriler gösteriliyor.</p>
+            <p><i><b>{{ dataStartDate }}</b></i> tarihinden itibaren olan veriler gösteriliyor.</p>
             <div id="map" class="flex border-gray-600 border-2 shadow-lg h-96 w-full rounded-md z-10 "></div>
 
             <!-- Buttons -->
@@ -19,6 +20,7 @@
                 </div>
             </div>
 
+        </div>
     </div>
 </template>
 

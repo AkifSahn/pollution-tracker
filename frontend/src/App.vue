@@ -9,5 +9,6 @@ import RegionView from './components/RegionView.vue'
     <div class="bg-white h-screen">
         <NotificationPanel/>
         <HeatMap/>
+        <PollutionGraph/>
     </div>
 </template>

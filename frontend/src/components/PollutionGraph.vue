@@ -31,6 +31,8 @@
 <script>
 
     import * as d3 from "d3";
+    import { useMapStore } from "../stores/mapStore";
+    import { watch } from "vue";
 
     export default{
         data() {
@@ -40,9 +42,23 @@
                 longitudeFrom: -180,
                 longitudeTo: 180,
                 data: [ ],
+                mapStore: null,
             };
         },
         mounted() {
+            this.mapStore = useMapStore();
+
+            watch(
+                () => this.mapStore.graphBound,
+                (newBound) => {
+                    this.latitudeFrom = Math.min(newBound[0].lat,newBound[1].lat);
+                    this.longitudeFrom = Math.min(newBound[0].lng,newBound[1].lng);
+
+                    this.latitudeTo = Math.max(newBound[0].lat, newBound[1].lat);
+                    this.longitudeTo = Math.max(newBound[0].lng, newBound[1].lng);
+                },
+            )
+
             this.fetchData().then(() =>{
                 this.drawChart();
             });

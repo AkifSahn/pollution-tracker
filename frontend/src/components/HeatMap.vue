@@ -43,20 +43,27 @@
                 rangeValueDay: 0,
                 rangeValueHour: 23,
                 dataStartDate: null,
+
+                topLeftPos: [41.807221, 26.371056],
+                bottomRightPos: [36.887526, 44.700193],
+
+                topLeftMarker: null,
+                bottomRightMarker: null,
+                mapStore: null,
             };
         },
         mounted() {
+            this.mapStore = useMapStore()
+
             this.initMap();
             this.fetchData();
 
-            const mapStore = useMapStore()
-
             watch(
-                () => mapStore.markers,
+                () => this.mapStore.markers,
                 (newMarkers) => {
                     newMarkers.forEach((marker) => {
-                        L.marker([marker.latitude, marker.longitude])
-                            .bindPopup(`Value: ${marker.value}`)
+                        L.marker([this.marker.latitude, this.marker.longitude])
+                            .bindPopup(`Value: ${this.marker.value}`)
                             .addTo(this.map)
                     })
                 },
@@ -76,6 +83,44 @@
                 const bounds = [[-90, -180], [90, 180]];
                 this.map.setMaxBounds(bounds);
                 this.map.options.minZoom = 2;
+
+                // Add draggable markers
+                this.topLeftMarker = L.marker(this.topLeftPos, {
+                    draggable: true,
+                    // autoPan: true,
+                }).addTo(this.map);
+
+                this.bottomRightMarker = L.marker(this.bottomRightPos, {
+                    draggable: true,
+                    // autoPan: true,
+                }).addTo(this.map);
+
+                this.bottomRightMarker.on("drag", (e) => {
+                    this.updateRect();
+                })
+
+                this.topLeftMarker.on("drag", (e) => {
+                    this.updateRect();
+                })
+
+                this.updateRect();
+            },
+
+            updateRect(){
+                const bounds = [this.topLeftMarker.getLatLng(), this.bottomRightMarker.getLatLng()];
+
+                this.map.eachLayer(function(layer){
+                    if (layer instanceof L.Rectangle) {
+                        layer.remove();
+                    }
+                });
+
+                L.rectangle(bounds, {
+                    color:  "#ff7800",
+                    weight: 1
+                }).addTo(this.map);
+
+                this.mapStore.graphBound = bounds;
             },
 
             async fetchData() {

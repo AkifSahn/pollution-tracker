@@ -3,6 +3,7 @@ import { ref } from 'vue'
 
 export const useMapStore = defineStore('mapStore', () => {
     const markers = ref([]) // [{ lat, lng, value }]
+    var graphBound = ref([])
 
     function addMarker(marker) {
         markers.value.push(marker)
@@ -16,6 +17,8 @@ export const useMapStore = defineStore('mapStore', () => {
         markers,
         addMarker,
         clearMarkers,
+
+        graphBound,
     }
 })
 

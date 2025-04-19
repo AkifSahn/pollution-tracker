@@ -3,10 +3,23 @@
 
         <div class="place-self-center">
             <button @click="fetchData"
-                class="block px-4 py-2 bg-blue-600 hover:bg-blue-700 hover:cursor-pointer text-white rounded-md"
+                class="block px-4 py-2 bg-blue-700 hover:bg-blue-600 hover:cursor-pointer text-white rounded-md"
                 type="submit">Graph</button>
         </div>
-        <div ref="chartContainer" class="w-full max-w-7xl h-96 place-self-center"></div>
+
+        <div class="flex justify-center">
+            <ul class="flex flex-col space-y-3 mx-10 p-4">
+                <button v-for="(item, index) in pollutantOptions" :key="index"
+                    @click="selectedPollutant = item; fetchData()" :class="[
+                        'px-4 py-2 rounded-md text-white hover:cursor-pointer',
+                        selectedPollutant === item ? 'bg-orange-500 hover:bg-orange-400' : 'bg-blue-700 hover:bg-blue-600'
+                    ]">
+                    {{ item }}
+                </button>
+            </ul>
+            <div ref="chartContainer" class="w-full max-w-7xl h-96 place-self-center"></div>
+        </div>
+
     </div>
 </template>
 
@@ -26,6 +39,9 @@ export default {
             longitudeTo: 180,
             data: [],
             mapStore: null,
+
+            pollutantOptions: [], // ['PM2.5', 'PM10', 'NO2', 'SO2', 'O3'],
+            selectedPollutant: null,
         };
     },
     mounted() {
@@ -36,17 +52,31 @@ export default {
             (newBound) => {
                 this.latitudeFrom = Math.min(newBound[0].lat, newBound[1].lat);
                 this.longitudeFrom = Math.min(newBound[0].lng, newBound[1].lng);
-
                 this.latitudeTo = Math.max(newBound[0].lat, newBound[1].lat);
                 this.longitudeTo = Math.max(newBound[0].lng, newBound[1].lng);
-            },
-        )
+            }
+        );
 
-        this.fetchData().then(() => {
-            this.drawChart();
-        });
+        this.fetchAvailablePollutants()
+            .then(() => this.fetchData())
+            .then(() => this.drawChart());
+
     },
     methods: {
+
+        async fetchAvailablePollutants() {
+            try {
+                const url = `http://127.0.0.1:3000/api/pollutants`;
+                const response = await fetch(url);
+                const jsonData = await response.json();
+
+                this.pollutantOptions = jsonData.pollutants || [];
+                this.selectedPollutant = this.pollutantOptions[0];
+            } catch (error) {
+                console.error("Error fetching data: ", error);
+            }
+        },
+
         async fetchData() {
             // Fetch the pollution data from backend
             // Let the user decide the lat-start, lat-end and long-start, long-end
@@ -54,13 +84,13 @@ export default {
             // Density graph for overall region for the time range also given by user
 
             try {
-                const url = `http://127.0.0.1:3000/api/region/density/SO2?` +
+                const url = `http://127.0.0.1:3000/api/region/density/${this.selectedPollutant}?` +
                     `latFrom=${encodeURIComponent(this.latitudeFrom)}&` +
                     `latTo=${encodeURIComponent(this.latitudeTo)}&` +
                     `longFrom=${encodeURIComponent(this.longitudeFrom)}&` +
                     `longTo=${encodeURIComponent(this.longitudeTo)}&` +
                     `from=${encodeURIComponent("2025-03-01 00:00:00")}&` +
-                    `to=${encodeURIComponent("2025-04-10 23:00:00")}`;
+                    `to=${encodeURIComponent("2025-04-28 23:00:00")}`;
 
                 console.log("Fetching:", url);
 

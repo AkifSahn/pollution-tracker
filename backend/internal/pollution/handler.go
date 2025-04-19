@@ -23,6 +23,8 @@ func SetupRoutes(app *fiber.App) {
 	api.Get("region/density/:pollutant", GetPollutionDensityOfRect)
 	api.Get("pollutions", GetAllPolution)
 
+	api.Get("pollutants", GetPollutants)
+
 	api.Post("ingest/manual", PostPollutionEntry)
 }
 
@@ -334,6 +336,24 @@ func GetPollutionDensityOfRect(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"densities": densities,
 	})
+}
+
+func GetPollutants(c *fiber.Ctx) error {
+	repo := NewPollutionRepo(database.DBPool)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	pollutants, err := repo.GetDistinctPollutants(ctx)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to fetch pollutants from database: " + err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"pollutants": pollutants,
+	})
+
 }
 
 // PostPollutionEntry

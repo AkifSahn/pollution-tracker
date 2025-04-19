@@ -15,6 +15,8 @@ type PollutionRepo interface {
 	GetPollutionDensityByRegion(ctx context.Context, radius, latitude, longitude float64, from, to time.Time) (float64, error)
 	GetPollutionDensityOfRect(ctx context.Context, latFrom, latTo, longFrom, longTo float64, from, to time.Time, step time.Duration, pollutant string) ([]PollutionDensity, error)
 
+	GetDistinctPollutants(ctx context.Context) ([]string, error)
+
 	GetMeanAndStd(ctx context.Context, pollutant string, radius, latitude, longitude float64, from, to time.Time) (float64, float64, error)
 
 	InsertPollution(ctx context.Context, pollution Pollution) error
@@ -185,6 +187,28 @@ func (repo *PollutionRepoImpl) GetPollutionDensityOfRect(ctx context.Context, la
 
 	return result, nil
 
+}
+
+func (repo *PollutionRepoImpl) GetDistinctPollutants(ctx context.Context) ([]string, error) {
+	query := `SELECT DISTINCT pollutant FROM air_pollution;`
+
+	rows, err := repo.DB.Query(ctx, query)
+	if err != nil {
+		return nil, fmt.Errorf("Unable to query - %s", err.Error())
+	}
+	defer rows.Close()
+
+	var result []string
+	for rows.Next() {
+		var s string
+		err := rows.Scan(&s)
+		if err != nil {
+			return nil, fmt.Errorf("Unable to scan - %s", err.Error())
+		}
+		result = append(result, s)
+	}
+
+	return result, nil
 }
 
 func (repo *PollutionRepoImpl) GetMeanAndStd(ctx context.Context, pollutant string, radius, latitude, longitude float64, from, to time.Time) (float64, float64, error) {

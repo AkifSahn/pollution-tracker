@@ -154,8 +154,8 @@ export default {
 
                 const toDate = formatDate(now);
                 this.dataStartDate = formatDate(yesterday);
-                console.log(toDate)
-                console.log(this.dataStartDate)
+                this.mapStore.timeFrom = this.dataStartDate
+                this.mapStore.timeTo = toDate
 
                 const url = `http://127.0.0.1:3000/api/pollutions?from=${encodeURIComponent(this.dataStartDate)}&to=${encodeURIComponent(toDate)}`;
                 console.log(url)

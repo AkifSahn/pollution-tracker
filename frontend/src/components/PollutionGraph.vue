@@ -57,9 +57,17 @@ export default {
             }
         );
 
+        watch(
+            () => [this.mapStore.timeTo, this.mapStore.timeFrom],
+            () => {
+                this.fetchData()
+                    .then(() => this.drawChart());
+            }
+        );
+
         this.fetchAvailablePollutants()
-            .then(() => this.fetchData())
-            .then(() => this.drawChart());
+        //.then(() => this.fetchData())
+        // .then(() => this.drawChart());
 
     },
     methods: {
@@ -84,15 +92,14 @@ export default {
             // Density graph for overall region for the time range also given by user
 
             try {
+
                 const url = `http://127.0.0.1:3000/api/region/density/${this.selectedPollutant}?` +
                     `latFrom=${encodeURIComponent(this.latitudeFrom)}&` +
                     `latTo=${encodeURIComponent(this.latitudeTo)}&` +
                     `longFrom=${encodeURIComponent(this.longitudeFrom)}&` +
                     `longTo=${encodeURIComponent(this.longitudeTo)}&` +
-                    `from=${encodeURIComponent("2025-03-01 00:00:00")}&` +
-                    `to=${encodeURIComponent("2025-04-28 23:00:00")}`;
-
-                console.log("Fetching:", url);
+                    `from=${encodeURIComponent(this.mapStore.timeFrom)}&` +
+                    `to=${encodeURIComponent(this.mapStore.timeTo)}`;
 
                 const response = await fetch(url);
                 const jsonData = await response.json();
@@ -111,6 +118,7 @@ export default {
             }
             this.drawChart();
         },
+
         drawChart() {
             const container = this.$refs.chartContainer;
 

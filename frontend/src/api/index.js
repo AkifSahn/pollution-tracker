@@ -17,6 +17,17 @@ export async function fetchPollutants() {
     return data;
 }
 
+// Get Anomalies
+export async function fetchAnomaliesOfRange(fromDate, toDate) {
+    const url = `${API_BASE_URL}/anomalies` +
+        `?from=${encodeURIComponent(fromDate)}&` +
+        `to=${encodeURIComponent(toDate)}`;
+
+    const response = await fetch(url);
+    const data = await response.json();
+    return data;
+}
+
 // Get Region Density
 export async function fetchRegionDensity(pollutant, params) {
     const { latFrom, latTo, longFrom, longTo, from, to } = params;

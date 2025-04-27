@@ -70,7 +70,7 @@ import 'leaflet.heat';
 
 import { useMapStore } from "../stores/mapStore";
 import { watch, nextTick } from "vue";
-import { fetchPollutions } from "../api";
+import { fetchPollutions, fetchAnomaliesOfRange } from "../api";
 import ModalFullScreen from "./ModalFullScreen.vue";
 
 export default {
@@ -106,23 +106,14 @@ export default {
 
         this.initMap();
         this.fetchData();
+        this.fetchAnomalies();
 
         window.addEventListener('resize', this.handleResize);
 
         watch(
             () => this.mapStore.markers,
             (newMarkers) => {
-                newMarkers.forEach((marker) => {
-                    L.marker([marker.latitude, marker.longitude])
-                        .bindPopup(`Value: ${marker.value}<br>Pollutant: ${marker.pollutant}`)
-                        .addTo(this.map)
-
-                    if (this.fullScreenMap) {
-                        L.marker([marker.latitude, marker.longitude])
-                            .bindPopup(`Value: ${marker.value}<br>Pollutant: ${marker.pollutant}`)
-                            .addTo(this.fullScreenMap)
-                    }
-                })
+                createAnomalyMarkers(newMarkers);
             },
             { deep: true }
         )
@@ -142,6 +133,29 @@ export default {
         window.removeEventListener('resize', this.handleResize);
     },
     methods: {
+        formatDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            return `${year}-${month}-${day} ${hours}:${minutes}:00`;
+        },
+        createAnomalyMarkers(markers) {
+            markers.forEach((marker) => {
+                L.marker([marker.latitude, marker.longitude])
+                    .bindPopup(`Value: ${marker.value}<br>Pollutant: ${marker.pollutant}`)
+                    .addTo(this.map)
+
+                if (this.fullScreenMap) {
+                    L.marker([marker.latitude, marker.longitude])
+                        .bindPopup(`Value: ${marker.value}<br>Pollutant: ${marker.pollutant}`)
+                        .addTo(this.fullScreenMap)
+                }
+            })
+
+        },
+
         handleResize() {
             if (this.map) {
                 this.map.invalidateSize();
@@ -305,6 +319,19 @@ export default {
 
             rect.addTo(this.fullScreenMap);
         },
+        async fetchAnomalies() {
+            try {
+                const now = new Date();
+                const before = new Date(now);
+                before.setHours(now.getHours() - 4); // TODO: fix the database time difference issue. DB is 3 hours back
+                const data = await fetchAnomaliesOfRange(this.formatDate(before), this.formatDate(now));
+                console.log(data)
+                const pollutions = data.pollutions || [];
+                this.createAnomalyMarkers(pollutions)
+            } catch (error) {
+                console.log("An error occured while fetching anomalies!");
+            }
+        },
         async fetchData() {
             this.loading = true;
             this.pollutions = [];
@@ -314,17 +341,9 @@ export default {
                 const yesterday = new Date(now);
                 yesterday.setHours(now.getHours() - this.rangeValueHour - this.rangeValueDay * 24);
 
-                function formatDate(date) {
-                    const year = date.getFullYear();
-                    const month = String(date.getMonth() + 1).padStart(2, '0');
-                    const day = String(date.getDate()).padStart(2, '0');
-                    const hours = String(date.getHours()).padStart(2, '0');
-                    const minutes = String(date.getMinutes()).padStart(2, '0');
-                    return `${year}-${month}-${day} ${hours}:${minutes}:00`;
-                }
 
-                const toDate = formatDate(now);
-                this.dataStartDate = formatDate(yesterday);
+                const toDate = this.formatDate(now);
+                this.dataStartDate = this.formatDate(yesterday);
                 this.mapStore.timeFrom = this.dataStartDate
                 this.mapStore.timeTo = toDate
 

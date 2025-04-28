@@ -22,9 +22,7 @@ import (
 // @description	API documentation for pollution-tracker app
 func main() {
 
-	app := fiber.New(fiber.Config{
-		StrictRouting: true,
-	})
+	app := fiber.New()
 
 	cfg := config.LoadConfig()
 

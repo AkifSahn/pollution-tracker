@@ -6,90 +6,27 @@
         "contact": {}
     },
     "paths": {
-        "/api/air-quality/{latitude}/{longitude}": {
-            "get": {
-                "description": "Gets air quality value for given location. Optional time range can be given",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "pollution"
-                ],
-                "summary": "Gets air quality value",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "latitude",
-                        "name": "latitude",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "longitude",
-                        "name": "longitude",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Starting time",
-                        "name": "from",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "End time",
-                        "name": "to",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "values: []PollutionValueResponse",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/pollution.PollutionValueResponse"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Cannot parse the given latitude/longitude value!",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Failed to fetch data from database!",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
         "/api/anomalies": {
             "get": {
-                "description": "Gets anomalies for a given time frange",
+                "description": "Gets anomalies for a given time range",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "pollution"
+                    "anomalies"
                 ],
                 "summary": "Gets anomalies for range",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "from",
+                        "description": "Start time",
                         "name": "from",
                         "in": "query",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "to",
+                        "description": "End time",
                         "name": "to",
                         "in": "query",
                         "required": true
@@ -97,30 +34,129 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "pollution",
+                        "description": "Anomalies",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/pollution.Pollution"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/pollution.Pollution"
+                                }
                             }
                         }
                     },
                     "400": {
-                        "description": "Failed to parse given time value(from)!",
+                        "description": "Invalid params",
                         "schema": {
-                            "type": "string"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "500": {
                         "description": "Failed to fetch pollution entries from database",
                         "schema": {
-                            "type": "string"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
             }
         },
-        "/api/ingest/manual": {
+        "/api/pollutants": {
+            "get": {
+                "description": "Gets distinct pollutants that exists in database",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "pollutants"
+                ],
+                "summary": "Gets pollutants",
+                "responses": {
+                    "200": {
+                        "description": "Pollutants",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to fetch pollutants entries from database",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/pollutions": {
+            "get": {
+                "description": "Gets all pollution values for given time range.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "pollutions"
+                ],
+                "summary": "Gets pollution values",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Start time",
+                        "name": "from",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "End time",
+                        "name": "to",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Pollution values",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/pollution.Pollution"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid params",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to fetch pollution entries from database",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
             "post": {
                 "description": "Posts a new pollution entry",
                 "consumes": [
@@ -130,7 +166,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "pollution"
+                    "pollutions"
                 ],
                 "summary": "Posts pollution entry",
                 "parameters": [
@@ -166,16 +202,111 @@
                 }
             }
         },
-        "/api/region-density/{latitude}/{longitude}/{radius}": {
+        "/api/pollutions/density/rect": {
             "get": {
-                "description": "Gets pollution density for a given radius",
+                "description": "Gets pollution densities for a given rect and time range",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "pollution"
+                    "pollutions"
                 ],
-                "summary": "Gets pollution density",
+                "summary": "Gets pollution densities of rect",
+                "parameters": [
+                    {
+                        "type": "number",
+                        "description": "latFrom",
+                        "name": "latFrom",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "number",
+                        "description": "latTo",
+                        "name": "latTo",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "number",
+                        "description": "longFrom",
+                        "name": "longFrom",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "number",
+                        "description": "longTo",
+                        "name": "longTo",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "from",
+                        "name": "from",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "to",
+                        "name": "to",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "pollutant",
+                        "name": "pollutant",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Pollution Densities",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/pollution.PollutionDensity"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid params",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to fetch pollution entries from database",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/pollutions/{latitude}/{longitude}": {
+            "get": {
+                "description": "Gets pollution values for given location and time range",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "pollutions"
+                ],
+                "summary": "Gets pollution values",
                 "parameters": [
                     {
                         "type": "string",
@@ -193,117 +324,46 @@
                     },
                     {
                         "type": "string",
-                        "description": "radius",
-                        "name": "radius",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "from",
+                        "description": "Start time",
                         "name": "from",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "to",
+                        "description": "End time",
                         "name": "to",
                         "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "density",
+                        "description": "Pollution Values",
                         "schema": {
-                            "type": "string"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/pollution.PollutionValueResponse"
+                                }
+                            }
                         }
                     },
                     "400": {
-                        "description": "Failed to parse given radius value!",
+                        "description": "Invalid params",
                         "schema": {
-                            "type": "string"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "500": {
-                        "description": "Failed to fetch region density from database",
+                        "description": "Failed to fetch pollution entries from database",
                         "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/region/density/{pollutant}": {
-            "get": {
-                "description": "Gets pollution density for a given rect",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "pollution"
-                ],
-                "summary": "Gets pollution density of rect",
-                "parameters": [
-                    {
-                        "type": "number",
-                        "description": "latFrom",
-                        "name": "latFrom",
-                        "in": "query"
-                    },
-                    {
-                        "type": "number",
-                        "description": "latTo",
-                        "name": "latTo",
-                        "in": "query"
-                    },
-                    {
-                        "type": "number",
-                        "description": "longFrom",
-                        "name": "longFrom",
-                        "in": "query"
-                    },
-                    {
-                        "type": "number",
-                        "description": "longTo",
-                        "name": "longTo",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "from",
-                        "name": "from",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "to",
-                        "name": "to",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "pollutant",
-                        "name": "pollutant",
-                        "in": "path"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "densities",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Failed to parse given time value(to/from)!",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Failed to fetch rect density from database",
-                        "schema": {
-                            "type": "string"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
@@ -331,6 +391,20 @@
                 },
                 "value": {
                     "type": "number"
+                }
+            }
+        },
+        "pollution.PollutionDensity": {
+            "type": "object",
+            "properties": {
+                "density": {
+                    "type": "number"
+                },
+                "pollutant": {
+                    "type": "string"
+                },
+                "time": {
+                    "type": "string"
                 }
             }
         },

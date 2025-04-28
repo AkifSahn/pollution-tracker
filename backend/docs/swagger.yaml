@@ -14,6 +14,15 @@ definitions:
       value:
         type: number
     type: object
+  pollution.PollutionDensity:
+    properties:
+      density:
+        type: number
+      pollutant:
+        type: string
+      time:
+        type: string
+    type: object
   pollution.PollutionValueResponse:
     properties:
       pollutant:
@@ -28,59 +37,77 @@ info:
   description: API documentation for pollution-tracker app
   title: pollution-tracker API
 paths:
-  /api/air-quality/{latitude}/{longitude}:
+  /api/anomalies:
     get:
-      description: Gets air quality value for given location. Optional time range
-        can be given
+      description: Gets anomalies for a given time range
       parameters:
-      - description: latitude
-        in: path
-        name: latitude
-        required: true
-        type: string
-      - description: longitude
-        in: path
-        name: longitude
-        required: true
-        type: string
-      - description: Starting time
+      - description: Start time
         in: query
         name: from
+        required: true
         type: string
       - description: End time
         in: query
         name: to
+        required: true
         type: string
       produces:
       - application/json
       responses:
         "200":
-          description: 'values: []PollutionValueResponse'
+          description: Anomalies
           schema:
-            items:
-              $ref: '#/definitions/pollution.PollutionValueResponse'
-            type: array
+            additionalProperties:
+              items:
+                $ref: '#/definitions/pollution.Pollution'
+              type: array
+            type: object
         "400":
-          description: Cannot parse the given latitude/longitude value!
+          description: Invalid params
           schema:
-            type: string
+            additionalProperties:
+              type: string
+            type: object
         "500":
-          description: Failed to fetch data from database!
+          description: Failed to fetch pollution entries from database
           schema:
-            type: string
-      summary: Gets air quality value
+            additionalProperties:
+              type: string
+            type: object
+      summary: Gets anomalies for range
       tags:
-      - pollution
-  /api/anomalies:
+      - anomalies
+  /api/pollutants:
     get:
-      description: Gets anomalies for a given time frange
+      description: Gets distinct pollutants that exists in database
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Pollutants
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Failed to fetch pollutants entries from database
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Gets pollutants
+      tags:
+      - pollutants
+  /api/pollutions:
+    get:
+      description: Gets all pollution values for given time range.
       parameters:
-      - description: from
+      - description: Start time
         in: query
         name: from
         required: true
         type: string
-      - description: to
+      - description: End time
         in: query
         name: to
         required: true
@@ -89,23 +116,28 @@ paths:
       - application/json
       responses:
         "200":
-          description: pollution
+          description: Pollution values
           schema:
-            items:
-              $ref: '#/definitions/pollution.Pollution'
-            type: array
+            additionalProperties:
+              items:
+                $ref: '#/definitions/pollution.Pollution'
+              type: array
+            type: object
         "400":
-          description: Failed to parse given time value(from)!
+          description: Invalid params
           schema:
-            type: string
+            additionalProperties:
+              type: string
+            type: object
         "500":
           description: Failed to fetch pollution entries from database
           schema:
-            type: string
-      summary: Gets anomalies for range
+            additionalProperties:
+              type: string
+            type: object
+      summary: Gets pollution values
       tags:
-      - pollution
-  /api/ingest/manual:
+      - pollutions
     post:
       consumes:
       - application/json
@@ -134,10 +166,10 @@ paths:
             type: string
       summary: Posts pollution entry
       tags:
-      - pollution
-  /api/region-density/{latitude}/{longitude}/{radius}:
+      - pollutions
+  /api/pollutions/{latitude}/{longitude}:
     get:
-      description: Gets pollution density for a given radius
+      description: Gets pollution values for given location and time range
       parameters:
       - description: latitude
         in: path
@@ -149,16 +181,11 @@ paths:
         name: longitude
         required: true
         type: string
-      - description: radius
-        in: path
-        name: radius
-        required: true
-        type: string
-      - description: from
+      - description: Start time
         in: query
         name: from
         type: string
-      - description: to
+      - description: End time
         in: query
         name: to
         type: string
@@ -166,68 +193,91 @@ paths:
       - application/json
       responses:
         "200":
-          description: density
+          description: Pollution Values
           schema:
-            type: string
+            additionalProperties:
+              items:
+                $ref: '#/definitions/pollution.PollutionValueResponse'
+              type: array
+            type: object
         "400":
-          description: Failed to parse given radius value!
+          description: Invalid params
           schema:
-            type: string
+            additionalProperties:
+              type: string
+            type: object
         "500":
-          description: Failed to fetch region density from database
+          description: Failed to fetch pollution entries from database
           schema:
-            type: string
-      summary: Gets pollution density
+            additionalProperties:
+              type: string
+            type: object
+      summary: Gets pollution values
       tags:
-      - pollution
-  /api/region/density/{pollutant}:
+      - pollutions
+  /api/pollutions/density/rect:
     get:
-      description: Gets pollution density for a given rect
+      description: Gets pollution densities for a given rect and time range
       parameters:
       - description: latFrom
         in: query
         name: latFrom
+        required: true
         type: number
       - description: latTo
         in: query
         name: latTo
+        required: true
         type: number
       - description: longFrom
         in: query
         name: longFrom
+        required: true
         type: number
       - description: longTo
         in: query
         name: longTo
+        required: true
         type: number
       - description: from
         in: query
         name: from
+        required: true
         type: string
       - description: to
         in: query
         name: to
+        required: true
         type: string
       - description: pollutant
-        in: path
+        in: query
         name: pollutant
+        required: true
         type: string
       produces:
       - application/json
       responses:
         "200":
-          description: densities
+          description: Pollution Densities
           schema:
-            type: string
+            additionalProperties:
+              items:
+                $ref: '#/definitions/pollution.PollutionDensity'
+              type: array
+            type: object
         "400":
-          description: Failed to parse given time value(to/from)!
+          description: Invalid params
           schema:
-            type: string
+            additionalProperties:
+              type: string
+            type: object
         "500":
-          description: Failed to fetch rect density from database
+          description: Failed to fetch pollution entries from database
           schema:
-            type: string
-      summary: Gets pollution density of rect
+            additionalProperties:
+              type: string
+            type: object
+      summary: Gets pollution densities of rect
       tags:
-      - pollution
+      - pollutions
 swagger: "2.0"

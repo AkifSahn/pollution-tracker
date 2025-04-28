@@ -171,7 +171,7 @@ export default {
         async fetchAvailablePollutants() {
             try {
                 const jsonData = await fetchPollutants();
-                this.pollutantOptions = jsonData.pollutants || [];
+                this.pollutantOptions = jsonData.data || [];
                 this.selectedPollutant = this.pollutantOptions[0];
 
                 if (this.selectedPollutant) {
@@ -195,10 +195,10 @@ export default {
 
                 const jsonData = await fetchRegionDensity(this.selectedPollutant, params);
 
-                if (jsonData.densities == null) {
+                if (jsonData.data == null) {
                     this.data = [];
                 } else {
-                    this.data = jsonData.densities.map(e => ({
+                    this.data = jsonData.data.map(e => ({
                         time: new Date(e.time),
                         value: e.density
                     }));

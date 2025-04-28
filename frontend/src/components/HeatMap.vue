@@ -325,8 +325,7 @@ export default {
                 const before = new Date(now);
                 before.setHours(now.getHours() - 4); // TODO: fix the database time difference issue. DB is 3 hours back
                 const data = await fetchAnomaliesOfRange(this.formatDate(before), this.formatDate(now));
-                console.log(data)
-                const pollutions = data.pollutions || [];
+                const pollutions = data.data || [];
                 this.createAnomalyMarkers(pollutions)
             } catch (error) {
                 console.log("An error occured while fetching anomalies!");
@@ -341,14 +340,13 @@ export default {
                 const yesterday = new Date(now);
                 yesterday.setHours(now.getHours() - this.rangeValueHour - this.rangeValueDay * 24);
 
-
                 const toDate = this.formatDate(now);
                 this.dataStartDate = this.formatDate(yesterday);
                 this.mapStore.timeFrom = this.dataStartDate
                 this.mapStore.timeTo = toDate
 
                 const data = await fetchPollutions(this.dataStartDate, toDate);
-                this.pollutions = data.pollutions || [];
+                this.pollutions = data.data || [];
                 this.updateHeatmap();
 
                 // Update fullscreen heatmap if it exists

@@ -3,7 +3,6 @@ package pollution
 import (
 	"context"
 	"encoding/json"
-	"strconv"
 	"time"
 
 	"github.com/AkifSahn/pollution-tracker/internal/database"
@@ -97,18 +96,11 @@ func GetAllPolutions(c *fiber.Ctx) error {
 	toStr := c.Query("to")
 
 	// Parse the string times into time.Time
-	format := "2006-01-02 15:04:05"
-	from, err := time.Parse(format, fromStr)
-	if err != nil {
+	var from, to time.Time
+	ok, msg := ParseTimeRange(fromStr, toStr, &from, &to)
+	if !ok {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Failed to parse given time value(from)!",
-		})
-	}
-
-	to, err := time.Parse(format, toStr)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Failed to parse given time value(to)!",
+			"error": msg,
 		})
 	}
 
@@ -125,7 +117,7 @@ func GetAllPolutions(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(fiber.Map{
-		"pollutions": pollutions,
+		"data": pollutions,
 	})
 }
 
@@ -150,41 +142,25 @@ func GetPollutionsByLatLon(c *fiber.Ctx) error {
 	latStr := c.Params("latitude")
 	longStr := c.Params("longitude")
 
-	// Get `latitude` and `longitude` from URL params and parse them
-	latitude, err := strconv.ParseFloat(latStr, 64)
-	if err != nil {
+	var latitude, longitude float64
+	ok, msg := ParseLatLon(latStr, longStr, &latitude, &longitude)
+	if !ok {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Cannot parse the given latitude value!",
+			"error": msg,
 		})
 	}
 
-	longitude, err := strconv.ParseFloat(longStr, 64)
-	if err != nil {
+	// TODO: should we do the 24 hour default time range????
+	fromStr := c.Query("from", time.Now().Add(-24*time.Hour).Format(TimeFormat))
+	toStr := c.Query("to", time.Now().Format(TimeFormat))
+
+	var from, to time.Time
+	ok, msg = ParseTimeRange(fromStr, toStr, &from, &to)
+	if !ok {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Cannot parse the given longitude value!",
+			"error": msg,
 		})
 	}
-	// --------
-
-	format := "2006-01-02 15:04:05"
-	// Get `from` and `to` from URL query and parse them
-	fromStr := c.Query("from", time.Now().Add(-24*time.Hour).Format(format))
-	toStr := c.Query("to", time.Now().Format(format))
-
-	from, err := time.Parse(format, fromStr)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Failed to parse given time - from",
-		})
-	}
-
-	to, err := time.Parse(format, toStr)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Failed to parse given time - to",
-		})
-	}
-	// --------
 
 	repo := NewPollutionRepo(database.DBPool)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -198,7 +174,7 @@ func GetPollutionsByLatLon(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"values": vals,
+		"data": vals,
 	})
 }
 
@@ -222,9 +198,8 @@ func GetPollutionsByLatLon(c *fiber.Ctx) error {
 //	@Success		200			{object}	map[string][]PollutionDensity	"Pollution Densities"
 //	@Router			/api/pollutions/density/rect [get]
 func GetPollutionDensityOfRect(c *fiber.Ctx) error {
-	format := "2006-01-02 15:04:05"
-	fromStr := c.Query("from", time.Now().Add(-24*time.Hour).Format(format))
-	toStr := c.Query("to", time.Now().Format(format))
+	fromStr := c.Query("from", time.Now().Add(-24*time.Hour).Format(TimeFormat))
+	toStr := c.Query("to", time.Now().Format(TimeFormat))
 
 	latFrom := c.QueryFloat("latFrom")
 	latTo := c.QueryFloat("latTo")
@@ -234,21 +209,13 @@ func GetPollutionDensityOfRect(c *fiber.Ctx) error {
 
 	pollutant := c.Query("pollutant")
 
-	// Parse the string times into time.Time
-	from, err := time.Parse(format, fromStr)
-	if err != nil {
+	var from, to time.Time
+	ok, msg := ParseTimeRange(fromStr, toStr, &from, &to)
+	if !ok {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Failed to parse given time value(from)! " + err.Error(),
+			"error": msg,
 		})
 	}
-
-	to, err := time.Parse(format, toStr)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Failed to parse given time value(to)!" + err.Error(),
-		})
-	}
-	// --------
 
 	repo := NewPollutionRepo(database.DBPool)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -262,7 +229,7 @@ func GetPollutionDensityOfRect(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"densities": densities,
+		"data": densities,
 	})
 }
 
@@ -285,18 +252,11 @@ func GetAnomaliesOfRange(c *fiber.Ctx) error {
 	toStr := c.Query("to")
 
 	// Parse the string times into time.Time
-	format := "2006-01-02 15:04:05"
-	from, err := time.Parse(format, fromStr)
-	if err != nil {
+	var from, to time.Time
+	ok, msg := ParseTimeRange(fromStr, toStr, &from, &to)
+	if !ok {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Failed to parse given time value(from)!",
-		})
-	}
-
-	to, err := time.Parse(format, toStr)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Failed to parse given time value(to)!",
+			"error": msg,
 		})
 	}
 
@@ -313,7 +273,7 @@ func GetAnomaliesOfRange(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(fiber.Map{
-		"pollutions": pollutions,
+		"data": pollutions,
 	})
 }
 
@@ -340,7 +300,7 @@ func GetPollutants(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"pollutants": pollutants,
+		"data": pollutants,
 	})
 
 }

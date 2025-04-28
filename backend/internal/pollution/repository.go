@@ -12,7 +12,7 @@ type PollutionRepo interface {
 	GetPollutionValueByPosition(ctx context.Context, latitude, longitude float64, from, to time.Time) ([]PollutionValueResponse, error)
 	GetAnomaliesWithinTimeRange(ctx context.Context, from, to time.Time) ([]Pollution, error)
 	GetAllPolutionWithinTimeRange(ctx context.Context, from, to time.Time) ([]Pollution, error)
-	GetPollutionDensityByRegion(ctx context.Context, radius, latitude, longitude float64, from, to time.Time) (float64, error)
+
 	GetPollutionDensityOfRect(ctx context.Context, latFrom, latTo, longFrom, longTo float64, from, to time.Time, step time.Duration, pollutant string) ([]PollutionDensity, error)
 
 	GetDistinctPollutants(ctx context.Context) ([]string, error)
@@ -123,28 +123,6 @@ func (repo *PollutionRepoImpl) GetAllPolutionWithinTimeRange(ctx context.Context
 
 	return pollutions, nil
 
-}
-
-func (repo *PollutionRepoImpl) GetPollutionDensityByRegion(ctx context.Context, radius, latitude, longitude float64, from, to time.Time) (float64, error) {
-	query := `
-    SELECT AVG(value) 
-    FROM air_pollution 
-    WHERE time >= $1 AND time <= $2 AND 
-    ST_DWithin(
-        geog,
-        ST_MakePoint($3,$4)::geography,
-        $5*1000
-    );
-    `
-	row := repo.DB.QueryRow(ctx, query, from, to, longitude, latitude, radius)
-
-	var density float64
-	err := row.Scan(&density)
-	if err != nil {
-		return -1, fmt.Errorf("Unable to scan %s", err.Error())
-	}
-
-	return density, nil
 }
 
 func (repo *PollutionRepoImpl) GetPollutionDensityOfRect(ctx context.Context, latFrom, latTo, longFrom, longTo float64, from, to time.Time, step time.Duration, pollutant string) ([]PollutionDensity, error) {

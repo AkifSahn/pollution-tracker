@@ -11,7 +11,7 @@ import (
 type PollutionRepo interface {
 	GetPollutionValueByPosition(ctx context.Context, latitude, longitude float64, from, to time.Time) ([]PollutionValueResponse, error)
 	GetAnomaliesWithinTimeRange(ctx context.Context, from, to time.Time) ([]Pollution, error)
-	GetAllPolutionWithinTimeRange(ctx context.Context, from, to time.Time) ([]Pollution, error)
+	GetAllPolutionWithinTimeRange(ctx context.Context, from, to time.Time, pollutant string) ([]Pollution, error)
 
 	GetPollutionDensityOfRect(ctx context.Context, latFrom, latTo, longFrom, longTo float64, from, to time.Time, step time.Duration, pollutant string) ([]PollutionDensity, error)
 
@@ -95,12 +95,21 @@ func (repo *PollutionRepoImpl) GetAnomaliesWithinTimeRange(ctx context.Context, 
 	return pollutions, nil
 }
 
-func (repo *PollutionRepoImpl) GetAllPolutionWithinTimeRange(ctx context.Context, from, to time.Time) ([]Pollution, error) {
+func (repo *PollutionRepoImpl) GetAllPolutionWithinTimeRange(ctx context.Context, from, to time.Time, pollutant string) ([]Pollution, error) {
 	query := `
     SELECT latitude, longitude, value, is_anomaly, pollutant from air_pollution
-    WHERE time BETWEEN $1 AND $2;
+    WHERE time BETWEEN $1 AND $2
     `
-	rows, err := repo.DB.Query(ctx, query, from, to)
+
+	var args []interface{}
+	args = append(args, from, to)
+
+	if pollutant != "" {
+		query += " AND pollutant = $3"
+		args = append(args, pollutant)
+	}
+
+	rows, err := repo.DB.Query(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("Unable to query - %s", err.Error())
 	}

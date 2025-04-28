@@ -2,8 +2,14 @@
 const API_BASE_URL = 'http://127.0.0.1:3000/api';
 
 // Get Pollutions
-export async function fetchPollutions(fromDate, toDate) {
-    const url = `${API_BASE_URL}/pollutions?from=${encodeURIComponent(fromDate)}&to=${encodeURIComponent(toDate)}`;
+export async function fetchPollutions(fromDate, toDate, pollutant) {
+    var url = `${API_BASE_URL}/pollutions?` +
+        `from=${encodeURIComponent(fromDate)}&` +
+        `to=${encodeURIComponent(toDate)}`
+    if (pollutant) {
+        url += `&pollutant=${encodeURIComponent(pollutant)}`;
+    }
+
     const response = await fetch(url);
     const data = await response.json();
     return data;

@@ -104,12 +104,14 @@ func GetAllPolutions(c *fiber.Ctx) error {
 		})
 	}
 
+	pollutant := c.Query("pollutant")
+
 	repo := NewPollutionRepo(database.DBPool)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	// Get anomalies from database
-	pollutions, err := repo.GetAllPolutionWithinTimeRange(ctx, from, to)
+	pollutions, err := repo.GetAllPolutionWithinTimeRange(ctx, from, to, pollutant)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to fetch pollution entries from database ",

@@ -9,7 +9,21 @@
             </button>
         </div>
 
-        <p class="mb-4"><i><b>{{ dataStartDate }}</b></i> tarihinden itibaren olan veriler gösteriliyor.</p>
+        <p class="mb-2"><i><b>{{ dataStartDate }}</b></i> tarihinden itibaren olan veriler gösteriliyor.</p>
+
+        <div class="w-full md:w-auto mb-2">
+            <!--<h3 class="font-medium mb-3">Pollutant Type</h3>-->
+            <div class="flex flex-wrap gap-2">
+                <button v-for="(item, index) in pollutantOptions" :key="index"
+                    @click="selectedPollutant === item ? (selectedPollutant = null) : (selectedPollutant = item); fetchData()"
+                    class="px-3 py-1.5 rounded-md transition-colors duration-300" :style="{
+                        backgroundColor: selectedPollutant === item ? 'var(--secondary-color)' : 'var(--primary-color)',
+                        color: 'var(--header-text)'
+                    }">
+                    {{ item }}
+                </button>
+            </div>
+        </div>
 
         <div id="map" class="border-2 shadow-lg h-96 w-full rounded-lg z-10 transition-colors duration-300"
             :style="{ borderColor: 'var(--primary-color)' }"></div>
@@ -70,7 +84,7 @@ import 'leaflet.heat';
 
 import { useMapStore } from "../stores/mapStore";
 import { watch, nextTick } from "vue";
-import { fetchPollutions, fetchAnomaliesOfRange } from "../api";
+import { fetchPollutions, fetchAnomaliesOfRange, fetchPollutants } from "../api";
 import ModalFullScreen from "./ModalFullScreen.vue";
 
 export default {
@@ -86,6 +100,9 @@ export default {
             heatLayer: null,
             fullScreenHeatLayer: null,
             showFullScreen: false,
+
+            pollutantOptions: [],
+            selectedPollutant: null,
 
             rangeValueDay: 0,
             rangeValueHour: 23,
@@ -105,7 +122,8 @@ export default {
         this.mapStore = useMapStore()
 
         this.initMap();
-        this.fetchData();
+        this.fetchAvailablePollutants();
+        // this.fetchData();
         this.fetchAnomalies();
 
         window.addEventListener('resize', this.handleResize);
@@ -319,6 +337,19 @@ export default {
 
             rect.addTo(this.fullScreenMap);
         },
+        async fetchAvailablePollutants() {
+            try {
+                const jsonData = await fetchPollutants();
+                this.pollutantOptions = jsonData.data || [];
+                this.selectedPollutant = this.pollutantOptions[0];
+
+                if (this.selectedPollutant) {
+                    await this.fetchData();
+                }
+            } catch (error) {
+                console.error("Error fetching pollutants:", error);
+            }
+        },
         async fetchAnomalies() {
             try {
                 const now = new Date();
@@ -345,7 +376,7 @@ export default {
                 this.mapStore.timeFrom = this.dataStartDate
                 this.mapStore.timeTo = toDate
 
-                const data = await fetchPollutions(this.dataStartDate, toDate);
+                const data = await fetchPollutions(this.dataStartDate, toDate, this.selectedPollutant);
                 this.pollutions = data.data || [];
                 this.updateHeatmap();
 

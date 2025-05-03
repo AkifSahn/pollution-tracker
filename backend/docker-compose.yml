@@ -25,6 +25,31 @@ services:
       RABBITMQ_DEFAULT_USER: ${AMQP_USER}
       RABBITMQ_DEFAULT_PASS: ${AMQP_PASSWORD}
 
+  app:
+      build: .
+      container_name: pollution-backend
+      restart: always
+      ports:
+        - "${SERVER_PORT}:${SERVER_PORT}"
+      depends_on:
+        - db
+        - rabbitmq
+      environment:
+        DB_USER: ${DB_USER}
+        DB_PASSWORD: ${DB_PASSWORD}
+        DB_NAME: ${DB_NAME}
+        DB_HOST: db
+        DB_PORT: ${DB_PORT}
+
+        SERVER_HOST: ${SERVER_HOST}
+        SERVER_PORT: ${SERVER_PORT}
+
+        AMQP_USER: ${AMQP_USER}
+        AMQP_PASSWORD: ${AMQP_PASSWORD}
+        AMQP_HOST: rabbitmq
+        AMQP_PORT: ${AMQP_PORT}
+
+
 volumes:
   postgres_data:
 

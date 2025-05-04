@@ -231,10 +231,44 @@ WebSocket bağlantı noktasıdır. Anomali tespit edildikçe bağlı istemcilere
 
 ## Scriptler
 
-TODO
+Sistem iki script ile test edilebilir:
+  * `manual-input.sh`
+  * `auto-test.sh`
+
+### 1. manual-input.sh  
+
+Bu script kullanıcının manuel olarak sisteme kirlilik değeri ekleyebilmesini sağlar
+
+```
+Usage: ./manual-input.sh <latitude> <longitude> <parameter> <value>
+```
+
+### 2. auto-test.sh
+
+Bu script ile sisteme otomatik bir şekilde kirlilik değerleri eklenebilir
+```
+Usage: auto-test.sh [--anomaly-chance=<0-100>] [--duration=<seconds>] [--rate=<number>] [--lat-min=] [--lat-max=] [--long-min=] [--long-max=]
+```
+**Parametreler**:
+  * `--anomaly-chance=<0-100>`: 0-100 arası verilen bir değer ile üretilen kirlilik değerinin anomali olma olasılığını belirtir. Varsayılan: 20  
+  * `--duration=<seconds>`: Scriptin kaç saniye boyunca çalışacağını belirtir. Varsayılan: 30
+  * `--rate=<number>`: Sisteme saniyede kaç tane kirlilik verisi gönderileceğini belirtir. Bu kirlilik verileri rastgele bir şekilde üretilir. Varsayılan 5
+  * `--lat-min=`: Oluşturulan kirlilik verisinin alabileceği en küçük **enlem** değerini belirtir. Varsayılan -90
+  * `--lat-max=`: Oluşturulan kirlilik verisinin alabileceği en büyük **enlem** değerini belirtir. Varsayılan 90
+  * `--long-min=`: Oluşturulan kirlilik verisinin alabileceği en küçük **boylam** değerini belirtir. Varsayılan -180
+  * `--long-max=`: Oluşturulan kirlilik verisinin alabileceği en büyük **boylam** değerini belirtir. Varsayılan 180
+
+* Örnek kullanım:
+  - Türkiye sınırlarında %20 şans ile anomali üretecek ve 2 dakika boyunca saniyede 2 kirlilik verisi üretecek kullanım örneği:
+    ```
+     ./auto-test.sh --anomaly-chance=20 --duration=120 --rate=2 \
+                    --lat-min=36.0 --lat-max=42.1 \
+                     --long-min=26.0 --long-max=45.0
+    ```
+    > Not: Bu örnek 2 dakika boyunca toplam 240 kirlilik verisi üretir. Ve kabaca 48 tane anomali değeri oluşturur.
+
 
 ## Sorun Giderme
 
 TODO
-
 

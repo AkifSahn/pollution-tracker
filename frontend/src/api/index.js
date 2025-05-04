@@ -38,14 +38,17 @@ export async function fetchAnomaliesOfRange(fromDate, toDate) {
 export async function fetchRegionDensity(pollutant, params) {
     const { latFrom, latTo, longFrom, longTo, from, to } = params;
 
-    const url = `${API_BASE_URL}/pollutions/density/rect` +
-        `?pollutant=${encodeURIComponent(pollutant)}&` +
-        `latFrom=${encodeURIComponent(latFrom)}&` +
+    var url = `${API_BASE_URL}/pollutions/density/rect` +
+        `?latFrom=${encodeURIComponent(latFrom)}&` +
         `latTo=${encodeURIComponent(latTo)}&` +
         `longFrom=${encodeURIComponent(longFrom)}&` +
         `longTo=${encodeURIComponent(longTo)}&` +
         `from=${encodeURIComponent(from)}&` +
         `to=${encodeURIComponent(to)}`;
+
+    if (pollutant){
+        url += `&pollutant=${encodeURIComponent(pollutant)}`;
+    }
 
     const response = await fetch(url);
     const data = await response.json();

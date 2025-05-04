@@ -123,7 +123,7 @@ export default {
 
         this.initMap();
         this.fetchAvailablePollutants();
-        // this.fetchData();
+        this.fetchData();
         this.fetchAnomalies();
 
         window.addEventListener('resize', this.handleResize);
@@ -341,11 +341,6 @@ export default {
             try {
                 const jsonData = await fetchPollutants();
                 this.pollutantOptions = jsonData.data || [];
-                this.selectedPollutant = this.pollutantOptions[0];
-
-                if (this.selectedPollutant) {
-                    await this.fetchData();
-                }
             } catch (error) {
                 console.error("Error fetching pollutants:", error);
             }
@@ -365,6 +360,7 @@ export default {
         async fetchData() {
             this.loading = true;
             this.pollutions = [];
+            this.mapStore.selectedPollutant = this.selectedPollutant;
 
             try {
                 const now = new Date();

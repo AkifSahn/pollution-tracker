@@ -9,21 +9,6 @@
         </div>
 
         <div class="flex flex-col md:flex-row justify-between items-start gap-6">
-            <!-- Pollutant options -->
-            <div class="w-full md:w-auto">
-                <h3 class="font-medium mb-3">Pollutant Type</h3>
-                <div class="flex flex-wrap gap-2">
-                    <button v-for="(item, index) in pollutantOptions" :key="index"
-                        @click="selectedPollutant = item; fetchData()"
-                        class="px-3 py-1.5 rounded-md transition-colors duration-300" :style="{
-                            backgroundColor: selectedPollutant === item ? 'var(--secondary-color)' : 'var(--primary-color)',
-                            color: 'var(--header-text)'
-                        }">
-                        {{ item }}
-                    </button>
-                </div>
-            </div>
-
             <!-- Refresh button -->
             <button @click="fetchData" class="px-4 py-2 rounded-md transition-colors duration-300" :style="{
                 backgroundColor: 'var(--primary-color)',
@@ -148,10 +133,20 @@ export default {
             }
         );
 
+        watch(
+            () => this.mapStore.selectedPollutant,
+            () => {
+                this.selectedPollutant = this.mapStore.selectedPollutant;
+                this.fetchData()
+                    .then(() => this.drawChart());
+            }
+        );
+
         // Handle window resize
         window.addEventListener('resize', this.handleResize);
 
-        this.fetchAvailablePollutants();
+        this.fetchData()
+            .then(() => this.drawChart());
     },
     beforeUnmount() {
         window.removeEventListener('resize', this.handleResize);
@@ -166,20 +161,6 @@ export default {
 
         closeFullScreen() {
             this.showFullScreen = false;
-        },
-
-        async fetchAvailablePollutants() {
-            try {
-                const jsonData = await fetchPollutants();
-                this.pollutantOptions = jsonData.data || [];
-                this.selectedPollutant = this.pollutantOptions[0];
-
-                if (this.selectedPollutant) {
-                    await this.fetchData();
-                }
-            } catch (error) {
-                console.error("Error fetching pollutants:", error);
-            }
         },
 
         async fetchData() {
@@ -303,7 +284,7 @@ export default {
                 .attr("text-anchor", "middle")
                 .attr("fill", textColor)
                 .style("font-size", "14px")
-                .text(`${this.selectedPollutant} Density Over Time`);
+                .text(`${this.selectedPollutant == null ? "All" : this.selectedPollutant} Density Over Time`);
 
             // X Axis label
             svg.append("text")

@@ -6,6 +6,7 @@ export const useMapStore = defineStore('mapStore', () => {
     var graphBound = ref([])
     var timeFrom = ref([])
     var timeTo = ref([])
+    var selectedPollutant = ref([])
 
     function addMarker(marker) {
         markers.value.push(marker)
@@ -23,6 +24,8 @@ export const useMapStore = defineStore('mapStore', () => {
         graphBound,
         timeFrom,
         timeTo,
+
+        selectedPollutant,
     }
 })
 

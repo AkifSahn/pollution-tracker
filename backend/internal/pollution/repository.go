@@ -221,10 +221,8 @@ func (repo *PollutionRepoImpl) GetMeanAndStd(ctx context.Context, pollutant stri
 func (repo *PollutionRepoImpl) InsertPollution(ctx context.Context, pollution Pollution) error {
 	query := `
     INSERT INTO air_pollution 
-    (time, pollutant, value, is_anomaly, latitude, longitude, geog) 
-    VALUES ($1,$2,$3,$4,$5,$6,
-    ST_SetSRID(ST_MakePoint($6, $5), 4326)
-    );
+    (time, pollutant, value, is_anomaly, latitude, longitude) 
+    VALUES ($1,$2,$3,$4,$5,$6);
     `
 	_, err := repo.DB.Exec(ctx, query,
 		pollution.Time, pollution.Pollutant, pollution.Value,

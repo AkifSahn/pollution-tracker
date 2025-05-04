@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ENDPOINT="http://localhost:3000/pollutions"
+ENDPOINT="http://localhost:3000/api/pollutions"
 
 if ! command -v curl &> /dev/null; then
     echo "curl is not installed!"

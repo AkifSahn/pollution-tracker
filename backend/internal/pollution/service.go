@@ -21,6 +21,14 @@ func NewPollutionService(repo PollutionRepo) *PollutionService {
 	return &PollutionService{repo: repo}
 }
 
+var anomalyThresholds map[string]float64 = map[string]float64{
+	"PM2.5": 150,
+	"PM10":  180,
+	"NO2":   150,
+	"SO2":   100,
+	"O3":    200,
+}
+
 func (s *PollutionService) ProcessAndInsertPollutionEntry(ctx context.Context, entry Pollution) error {
 	fromTime := entry.Time.Add(-24 * time.Hour)
 	// Get mean and stddev for pollution values for 25 km radius
@@ -36,7 +44,20 @@ func (s *PollutionService) ProcessAndInsertPollutionEntry(ctx context.Context, e
 		zscore = 0
 	}
 
-	if math.Abs(zscore) > 2 {
+	/*
+	   These threshold values correspond to extreme situations and
+	   might not correspond to real-life thresholds.
+	   These exists for testing purposes.
+	   These thresholds are also used in the `auto-test.sh` script
+
+	   "PM2.5" anomaly_min=150;
+	   "PM10"  anomaly_min=180;
+	   "NO2"   anomaly_min=150;
+	   "SO2"   anomaly_min=100;
+	   "O3"    anomaly_min=200;
+	*/
+
+	if math.Abs(zscore) > 2 || entry.Value >= anomalyThresholds[entry.Pollutant] {
 		entry.IsAnomaly = true
 	} else {
 		entry.IsAnomaly = false

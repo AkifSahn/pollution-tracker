@@ -12,7 +12,6 @@
         <p class="mb-2"><i><b>{{ dataStartDate }}</b></i> tarihinden itibaren olan veriler gösteriliyor.</p>
 
         <div class="w-full md:w-auto mb-2">
-            <!--<h3 class="font-medium mb-3">Pollutant Type</h3>-->
             <div class="flex flex-wrap gap-2">
                 <button v-for="(item, index) in pollutantOptions" :key="index"
                     @click="selectedPollutant === item ? (selectedPollutant = null) : (selectedPollutant = item); fetchData()"
@@ -52,6 +51,19 @@
         <ModalFullScreen :show="showFullScreen" title="Pollution Heat Map" @close="closeFullScreen">
             <div class="h-full flex flex-col p-4">
                 <p class="mb-3"><i><b>{{ dataStartDate }}</b></i> tarihinden itibaren olan veriler gösteriliyor.</p>
+
+                <div class="w-full md:w-auto mb-2">
+                    <div class="flex flex-wrap gap-2">
+                        <button v-for="(item, index) in pollutantOptions" :key="index"
+                            @click="selectedPollutant === item ? (selectedPollutant = null) : (selectedPollutant = item); fetchData()"
+                            class="px-3 py-1.5 rounded-md transition-colors duration-300" :style="{
+                                backgroundColor: selectedPollutant === item ? 'var(--secondary-color)' : 'var(--primary-color)',
+                                color: 'var(--header-text)'
+                            }">
+                            {{ item }}
+                        </button>
+                    </div>
+                </div>
 
                 <div id="fullscreen-map" class="flex-grow border-2 rounded-lg transition-colors duration-300"
                     :style="{ borderColor: 'var(--primary-color)' }"></div>
@@ -257,13 +269,23 @@ export default {
             this.fullScreenMap.setMaxBounds(bounds);
             this.fullScreenMap.options.minZoom = 2;
 
+            const customDivIcon = L.divIcon({
+                html: "<div style='background-color: red; width: 15px; height: 15px; border-radius: 50%; opacity: 70%;'></div>",
+                className: "",
+                iconSize: [15, 15],
+            });
+
+            // Add draggable markers
             this.topLeftMarkerFullScreen = L.marker(this.topLeftMarker.getLatLng(), {
                 draggable: true,
+                icon: customDivIcon,
             }).addTo(this.fullScreenMap);
 
             this.bottomRightMarkerFullScreen = L.marker(this.bottomRightMarker.getLatLng(), {
                 draggable: true,
+                icon: customDivIcon,
             }).addTo(this.fullScreenMap);
+
 
             this.bottomRightMarkerFullScreen.on("drag", (e) => {
                 this.updateRectFullScreen();
@@ -289,6 +311,7 @@ export default {
 
             this.updateRectFullScreen();
             this.updateFullScreenHeatmap();
+            this.fetchAnomalies();
 
             // Give the map a moment to render before calling invalidateSize
             setTimeout(() => {

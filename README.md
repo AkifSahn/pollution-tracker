@@ -120,9 +120,10 @@ docker-compose --env-file backend/.env up --build
 
 | Servis               | Adres                                           |
 |----------------------|-------------------------------------------------|
+| Frontend UI          | http://localhost:5173/                          |
 | API Sunucusu         | http://localhost:3000                           |
-| Swagger Dokümantasyonu | http://localhost:3000/swagger/index.html       |
-| RabbitMQ UI          | http://localhost:15672 (guest / guest)         |
+| Swagger Dokümantasyonu | http://localhost:3000/swagger/index.html      |
+| RabbitMQ UI          | http://localhost:15672 (guest / guest)          |
 
 > `RabbitMQ` arayüzüne girerek kuyruğa gelen mesajları gözlemleyebilir ve sistemin düzgün çalışıp çalışmadığını kontrol edebilirsiniz.
 

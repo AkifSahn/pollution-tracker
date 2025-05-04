@@ -26,7 +26,8 @@ services:
       RABBITMQ_DEFAULT_PASS: ${AMQP_PASSWORD}
 
   app:
-      build: .
+      build:
+        context: ./backend
       container_name: pollution-backend
       restart: always
       ports:
@@ -48,6 +49,16 @@ services:
         AMQP_PASSWORD: ${AMQP_PASSWORD}
         AMQP_HOST: rabbitmq
         AMQP_PORT: ${AMQP_PORT}
+
+  frontend:
+      build:
+        context: ./frontend
+      container_name: pollution-frontend
+      ports:
+        - "5173:5173"
+      restart: always
+      depends_on:
+        - app
 
 
 volumes:

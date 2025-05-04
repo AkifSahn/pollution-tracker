@@ -89,7 +89,7 @@ export default {
         },
         initWs() {
             const mapStore = useMapStore();
-            this.ws = new WebSocket("ws://127.0.0.1:3000/ws")
+            this.ws = new WebSocket("ws://localhost:3000/ws")
             this.ws.onopen = (e) => {
                 console.log("Websocket connection established")
             };

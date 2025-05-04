@@ -109,10 +109,10 @@ AMQP_PORT=5672
 
 ### 3. Docker Compose ile Uygulamayı Başlatın
 
-Aşağıdaki komutla sistemdeki tüm bileşenleri ayağa kaldırabilirsiniz:
+Aşağıdaki komutu kök dizinde çalıştırarak sistemdeki tüm bileşenleri ayağa kaldırabilirsiniz:
 
 ```
-docker-compose --env-file .env up --build
+docker-compose --env-file backend/.env up --build
 ```
 > Not: Docker konteynerlarını arkaplanda çalıştırmak için `-d` flagı eklenebilir
 
@@ -131,7 +131,7 @@ docker-compose --env-file .env up --build
 Tüm ilgili docker servislerini durdurmak ve konteylerlarla ilişkili `volume`ları silmek için:
 
 ```
-docker-compose down -v
+docker-compose --env-file backend/.env down -v
 ```
 
 ---

@@ -131,7 +131,7 @@ export default {
         watch(
             () => this.mapStore.markers,
             (newMarkers) => {
-                createAnomalyMarkers(newMarkers);
+                this.createAnomalyMarkers(newMarkers);
             },
             { deep: true }
         )

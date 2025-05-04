@@ -139,7 +139,37 @@ docker-compose --env-file backend/.env down -v
 
 ## Kullanım Rehberi
 
-FRONTEND KULLANIM REHBERİ. TODO
+- Kullanıcı arayüzü aşağıdaki gibi gözükür, bu arayüzde görünen ana komponentler şunlardır:
+  * Isı Haritası
+  * Yoğunluk Grafiği
+  * Navbar ve bildirim paneli
+![Kullanıcı Arayüzü](screenshots/1.png?raw=true "Optional Title")
+
+- Haritada 1 saat içinde oluşan anomali işaretçileri aşağıdaki gibi gözükür ve işaretçiye tıklayarak anomali hakkında detaylı bilgi görülebilir
+![Marker](screenshots/2.png?raw=true "Optional Title")
+
+- Harita komponentinin üstünde bulunan parametre filtreleri ile ısı haritası üzerinde gösterilen değerler filtrelenebilir.
+- Seçilen filtreye ikinci kez tıklayarak filtre kaldırılabilir.
+- Hiçbir filtre seçili olmadığı zaman bütün parametre verileri haritada gözükür.
+- Haritanın aşağısında bulunan **Zaman Aralığı** girdileri ayarlanarak harita üzerindeki veriler belirli zaman aralığından seçilebillir.
+- Varsayılan olarak 23 saat içerisindeki veriler gösterilir.
+![Filtre](screenshots/3.png?raw=true "Optional Title")
+
+- Sağ üst köşede bulunan **Bildirimler** butonu ile bildirim paneli açılabilir.
+- Kullanıcıya iletilen bildirimler anlık olarak burada gözükür ve ısı haritasına işaretçi olarak da eklenir.
+![Bildirim](screenshots/4.png?raw=true "Optional Title")
+
+- Isı haritası üzerinde görünen dikdörtgen alanın boyu ve konumu iki köşesinde bulunan imleçler değiştirilebilir.
+- Bu seçilen alanın altında kalan bölge için **Yoğunluk Grafiği** gösterilir.
+- Alan değiştirildiğinde grafik de otomatik olarak güncellenir
+![Alan Seçme](screenshots/5.png?raw=true "Optional Title")
+
+- Grafik seçilen bölgedeki kirlilik yoğunluğuklarını gösterir.
+- Grafik üzerindeki yoğunluk verileri ilk veriden başlanarak 5dk değerlerin ortalaması alınarak backend tarafından hesaplanır.
+- Harita üzerindeki parametre filtreleri aynı zamanda grafiğe de uygulanır.
+![Grafik](screenshots/6.png?raw=true "Optional Title")
+
+
 
 ---
 

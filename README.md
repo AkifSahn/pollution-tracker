@@ -299,7 +299,46 @@ Usage: auto-test.sh [--anomaly-chance=<0-100>] [--duration=<seconds>] [--rate=<n
     > Not: Bu örnek 2 dakika boyunca toplam 240 kirlilik verisi üretir. Ve kabaca 48 tane anomali değeri oluşturur.
 
 
-## Sorun Giderme
+## Sorun Giderme(Troubleshooting)
 
-TODO
+### 1. Docker Konteynerları başlatılamıyor
 
+**Hata:**
+ERROR: Conflict. The container name "\<container-name\>" is already in use...
+
+**Çözüm:**
+Bu hata aynı isimde bir container daha önce oluşturulduysa görülür. Aşağıdaki komutla eski konteyner silinebilir silebilirsin:
+
+    docker rm <container-name>
+
+Alternatif olarak halihazırda duran tüm konteynerlar aşağıdaki komutla silinebilir:
+
+    docker container prune
+
+
+### 2. Frontend, backend API'ına erişemiyor
+
+**Çözüm:**
+- Backend çalışıyor mu kontrol et.
+- `Brave` veya benzeri tarayıcılarda `Shields` özelliği backend API'ına erişimi engelleyebilir.
+- Geçici olarak `Chrome` kullan ya da `Shields` özelliğini devre dışı bırak.
+
+### 3. Backend Veritabanına Bağlanamıyor
+
+**Hata:**
+127.0.0.1:5432 (127.0.0.1): dial error: dial tcp 127.0.0.1:5432: connect: connection refused
+
+**Çözüm:**
+- `TimeScaleDB` veritabanı ayakta mı kontrol et
+- `TimeScaleDB` ayakta değilse veritabanı konteynerını ayağa kaldır
+- `docker start pollution-db`
+
+### 4. Backend RabbitMQ'ya Bağlanamıyor
+
+**Hata:**
+Failed to connect RabbitMQ: dial tcp 127.0.0.1:5672: connect: connection refused
+
+**Çözüm:**
+- `RabbitMQ` konteynerı ayakta mı kontrol et
+- `RabbitMQ` ayakta değilse konteynerı ayağa kaldır
+- `docker start pollution-rabbitmq`

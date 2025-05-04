@@ -131,6 +131,12 @@ const docTemplate = `{
                         "name": "to",
                         "in": "query",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Pollutant",
+                        "name": "pollutant",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -268,8 +274,7 @@ const docTemplate = `{
                         "type": "string",
                         "description": "pollutant",
                         "name": "pollutant",
-                        "in": "query",
-                        "required": true
+                        "in": "query"
                     }
                 ],
                 "responses": {

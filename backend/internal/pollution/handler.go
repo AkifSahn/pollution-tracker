@@ -84,12 +84,13 @@ func PostPollutionEntry(c *fiber.Ctx) error {
 //	@Tags			pollutions
 //	@Produce		json
 //
-//	@Param			from	query		string					true	"Start time"
-//	@Param			to		query		string					true	"End time"
+//	@Param			from		query		string					true	"Start time"
+//	@Param			to			query		string					true	"End time"
+//	@Param			pollutant	query		string					false	"Pollutant"
 //
-//	@Success		200		{object}	map[string][]Pollution	"Pollution values"
-//	@Failure		400		{object}	map[string]string		"Invalid params"
-//	@Failure		500		{object}	map[string]string		"Failed to fetch pollution entries from database"
+//	@Success		200			{object}	map[string][]Pollution	"Pollution values"
+//	@Failure		400			{object}	map[string]string		"Invalid params"
+//	@Failure		500			{object}	map[string]string		"Failed to fetch pollution entries from database"
 //	@Router			/api/pollutions [get]
 func GetAllPolutions(c *fiber.Ctx) error {
 	fromStr := c.Query("from")
@@ -110,7 +111,6 @@ func GetAllPolutions(c *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	// Get anomalies from database
 	pollutions, err := repo.GetAllPolutionWithinTimeRange(ctx, from, to, pollutant)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -193,7 +193,7 @@ func GetPollutionsByLatLon(c *fiber.Ctx) error {
 //	@Param			longTo		query		float64							true	"longTo"
 //	@Param			from		query		string							true	"from"
 //	@Param			to			query		string							true	"to"
-//	@Param			pollutant	query		string							true	"pollutant"
+//	@Param			pollutant	query		string							false	"pollutant"
 //
 //	@Failure		400			{object}	map[string]string				"Invalid params"
 //	@Failure		500			{object}	map[string]string				"Failed to fetch pollution entries from database"

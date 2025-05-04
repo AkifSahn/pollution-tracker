@@ -112,6 +112,10 @@ paths:
         name: to
         required: true
         type: string
+      - description: Pollutant
+        in: query
+        name: pollutant
+        type: string
       produces:
       - application/json
       responses:
@@ -252,7 +256,6 @@ paths:
       - description: pollutant
         in: query
         name: pollutant
-        required: true
         type: string
       produces:
       - application/json

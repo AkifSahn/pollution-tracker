@@ -140,21 +140,20 @@ func (repo *PollutionRepoImpl) GetPollutionDensityOfRect(ctx context.Context, la
     WHERE latitude BETWEEN $2 AND $3 
         AND longitude BETWEEN $4 AND $5 
         AND time BETWEEN $6 AND $7 
-        AND pollutant = $8
-    GROUP BY bucket 
-    ORDER BY bucket;
+    `
+	var args []interface{}
+	args = append(args, step, latFrom, latTo, longFrom, longTo, from, to)
+
+	if pollutant != "" {
+		query += " AND pollutant = $8"
+		args = append(args, pollutant)
+	}
+	query += `
+        GROUP BY bucket 
+        ORDER BY bucket
     `
 
-	rows, err := repo.DB.Query(ctx, query,
-		step,
-		latFrom,
-		latTo,
-		longFrom,
-		longTo,
-		from,
-		to,
-		pollutant,
-	)
+	rows, err := repo.DB.Query(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("Unable to query - %s", err.Error())
 	}
